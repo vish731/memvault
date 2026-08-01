@@ -29,6 +29,7 @@ body {
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font-sans);
+  overflow-x: hidden;
 }
 
 .font-data { font-family: var(--font-data); }
@@ -46,12 +47,6 @@ body {
   border: 1px solid rgba(15, 118, 110, 0.15);
 }
 
-.badge-pill.on-dark {
-  background: rgba(255, 255, 255, 0.08);
-  color: #d0e8e4;
-  border-color: rgba(255, 255, 255, 0.15);
-}
-
 .icon-badge {
   display: inline-flex;
   align-items: center;
@@ -64,56 +59,6 @@ body {
   flex-shrink: 0;
 }
 .icon-badge.accent { background: var(--accent-soft); color: var(--accent); }
-
-.hero {
-  position: relative;
-  overflow: hidden;
-  background:
-    radial-gradient(circle at 15% 15%, rgba(15, 118, 110, 0.45), transparent 42%),
-    radial-gradient(circle at 85% 70%, rgba(234, 115, 23, 0.3), transparent 40%),
-    linear-gradient(160deg, #0a1220 0%, #101a2e 55%, #0a1220 100%);
-}
-.hero::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.055) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.055) 1px, transparent 1px);
-  background-size: 42px 42px;
-  mask-image: radial-gradient(ellipse at 30% 20%, black 0%, transparent 75%);
-}
-.hero-icon {
-  position: absolute;
-  right: -3rem;
-  top: 50%;
-  transform: translateY(-50%);
-  opacity: 0.08;
-  pointer-events: none;
-}
-
-.stat-chip {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 0.85rem;
-  padding: 0.7rem 1rem;
-  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
-}
-
-.floating-badge {
-  position: absolute;
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 0.85rem;
-  padding: 0.65rem 1rem;
-  box-shadow: 0 4px 16px -4px rgba(16, 24, 40, 0.15);
-}
 
 .card {
   background: var(--surface);
@@ -204,3 +149,26 @@ select.field {
   transition: color 150ms ease;
 }
 .nav-link:hover { color: var(--ink); }
+
+.stat-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.85rem;
+  padding: 0.7rem 1rem;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+}
+
+.floating-badge {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.85rem;
+  padding: 0.65rem 1rem;
+  box-shadow: 0 4px 16px -4px rgba(16, 24, 40, 0.15);
+}
