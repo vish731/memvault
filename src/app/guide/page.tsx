@@ -37,7 +37,7 @@ export default function Guide() {
             <li><a href="https://chromewebstore.google.com/detail/petra-aptos-wallet/ejjladinnckdgjemekebdpeokbikhfci" target="_blank" rel="noopener noreferrer" className="text-[var(--primary)] font-medium">Petra Wallet</a> (recommended, most common on Aptos)</li>
             <li><a href="https://chromewebstore.google.com/detail/okx-wallet/mcohilncbfahbmgdjkbpemcciiolgcge" target="_blank" rel="noopener noreferrer" className="text-[var(--primary)] font-medium">OKX Wallet</a></li>
           </ul>
-          <p>Install the extension, then create a new wallet (or import one if you already have it). Save your recovery phrase somewhere safe &mdash; nobody can recover it for you if it&rsquo;s lost.</p>
+          <p>Install the extension, then create a new wallet (or import one if you already have it). Save your recovery phrase somewhere safe. Nobody can recover it for you if it&rsquo;s lost.</p>
         </Step>
 
         <Step n={2} title="Switch your wallet to the right network">
@@ -53,11 +53,11 @@ export default function Guide() {
         <Step n={4} title="Store your first memory">
           <p>Go to the <a href="/" className="text-[var(--primary)] font-medium">My Memories</a> page and fill in the &ldquo;Store a new memory&rdquo; form:</p>
           <ul className="list-disc list-inside">
-            <li><strong className="text-[var(--ink)]">Memory content</strong> &mdash; the actual text, which gets encrypted before it ever leaves your device</li>
-            <li><strong className="text-[var(--ink)]">Public summary</strong> &mdash; a short, non-sensitive description shown if you list it for sale later</li>
-            <li><strong className="text-[var(--ink)]">Tags &amp; kind</strong> &mdash; help others find it in the marketplace</li>
+            <li><strong className="text-[var(--ink)]">Memory content</strong>: the actual text, which gets encrypted before it ever leaves your device</li>
+            <li><strong className="text-[var(--ink)]">Public summary</strong>: a short, non-sensitive description shown if you list it for sale later</li>
+            <li><strong className="text-[var(--ink)]">Tags &amp; kind</strong>: help others find it in the marketplace</li>
           </ul>
-          <p>Click <strong className="text-[var(--ink)]">&ldquo;Store memory&rdquo;</strong> &mdash; it&rsquo;s encrypted and uploaded to Shelby&rsquo;s decentralized storage network.</p>
+          <p>Click <strong className="text-[var(--ink)]">&ldquo;Store memory&rdquo;</strong>, it&rsquo;s encrypted and uploaded to Shelby&rsquo;s decentralized storage network.</p>
         </Step>
 
         <Step n={5} title="List it in the marketplace (optional)">
