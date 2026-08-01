@@ -7,7 +7,7 @@ export default function Contact() {
       </span>
       <h1 className="text-4xl font-extrabold tracking-tight mb-4">Get in touch</h1>
       <p className="text-[var(--muted)] text-[0.9375rem] leading-relaxed mb-10 max-w-lg">
-        This is a demo project, so there&rsquo;s no support team behind it &mdash; but here&rsquo;s where to go depending on what you need.
+        This is a demo project, so there&rsquo;s no support team behind it, but here&rsquo;s where to go depending on what you need.
       </p>
 
       <div className="grid sm:grid-cols-2 gap-4">
@@ -37,7 +37,7 @@ export default function Contact() {
           </span>
           <div>
             <p className="font-semibold text-[0.9375rem]">Common issues</p>
-            <p className="text-sm text-[var(--muted)] mt-1">Check the FAQ before reaching out &mdash; it covers most setup problems.</p>
+            <p className="text-sm text-[var(--muted)] mt-1">Check the FAQ before reaching out. It covers most setup problems.</p>
           </div>
         </a>
 
