@@ -5,7 +5,7 @@ import ConnectWalletButton from "@/components/ConnectWalletButton";
 import MobileNav from "@/components/MobileNav";
 
 export const metadata: Metadata = {
-  title: "Memvault — encrypted AI memory & marketplace",
+  title: "Memvault, encrypted AI memory & marketplace",
   description: "Decentralized AI memory storage and pay-per-read data marketplace, built on Shelby Protocol.",
 };
 
