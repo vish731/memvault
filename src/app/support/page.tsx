@@ -12,16 +12,16 @@ const FAQS = [
     a: "shelbyUSD is Shelby Protocol's unit for paying to read storage. In this demo, every new visitor starts with a simulated 100 shelbyUSD balance so you can test buying listings without needing real funds.",
   },
   {
+    q: "What does connecting a wallet do here?",
+    a: "It links your real Aptos address (via Petra) to your session, using the official AIP-62 wallet adapter standard. In this demo build, the marketplace balance and purchases still use a separate anonymous-cookie identity. Full wallet-based identity is the next step, noted on the Docs page.",
+  },
+  {
     q: "Why did my \"Store memory\" or \"Buy\" action fail?",
     a: "The most common causes are: the Shelby testnet account behind this deployment isn't funded, the SHELBY_API_KEY or SHELBY_PRIVATE_KEY environment variables are missing, or the database connection timed out. Check the error message shown on the page for specifics.",
   },
   {
     q: "Can I get my memory back if I lose the decryption key?",
-    a: "No. The key is what makes the content unrecoverable by anyone else, including us — so there's no recovery path if it's lost. Treat memory content the way you'd treat anything encrypted: back up what matters to you.",
-  },
-  {
-    q: "How do I get testnet APT or shelbyUSD to fund a real account?",
-    a: "Shelby provides testnet faucets for both — see the Docs page for links, or visit docs.shelby.xyz directly. This app's marketplace balance is separate and simulated, so it doesn't require real funding to try.",
+    a: "No. The key is what makes the content unrecoverable by anyone else, including us, so there's no recovery path if it's lost. Treat memory content the way you'd treat anything encrypted: back up what matters to you.",
   },
 ];
 
