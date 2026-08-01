@@ -90,7 +90,7 @@ export default function Purchases() {
       </span>
       <h1 className="text-4xl font-extrabold tracking-tight mb-4">Your purchases</h1>
       <p className="text-[var(--muted)] text-[0.9375rem] leading-relaxed mb-10 max-w-lg">
-        Memories you&rsquo;ve bought from the marketplace. Unlocking here is free &mdash; you already paid once.
+        Memories you&rsquo;ve bought from the marketplace. Unlocking here is free. You already paid once.
       </p>
 
       {error && (
