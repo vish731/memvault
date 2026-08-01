@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import WalletProvider from "@/components/WalletProvider";
 import ConnectWalletButton from "@/components/ConnectWalletButton";
+import MobileNav from "@/components/MobileNav";
 
 export const metadata: Metadata = {
   title: "Memvault — encrypted AI memory & marketplace",
@@ -30,7 +31,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <header className="bg-[var(--surface)] border-b border-[var(--border)] px-6 sm:px-10 py-4 sticky top-0 z-20">
             <div className="max-w-5xl mx-auto flex items-center justify-between gap-6">
               <a href="/"><Logo /></a>
-              <nav className="flex gap-6 items-center">
+              <nav className="hidden md:flex gap-6 items-center">
                 <a href="/" className="nav-link">My Memories</a>
                 <a href="/market" className="nav-link">Marketplace</a>
                 <a href="/purchases" className="nav-link">Purchases</a>
@@ -41,7 +42,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                   Guide
                 </a>
               </nav>
-              <ConnectWalletButton />
+              <div className="hidden md:block">
+                <ConnectWalletButton />
+              </div>
+              <MobileNav />
             </div>
           </header>
 
