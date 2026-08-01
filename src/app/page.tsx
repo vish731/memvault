@@ -69,38 +69,15 @@ function ChecklistItem({ done, children, href }: { done: boolean; children: Reac
   return href && !done ? <a href={href}>{content}</a> : content;
 }
 
-function OnboardingChecklist({ hasMemory, hasListing }: { hasMemory: boolean; hasListing: boolean }) {
+function OnboardingChecklist() {
   const { connected } = useWallet();
-  const [hasPurchase, setHasPurchase] = useState(false);
 
-  useEffect(() => {
-    fetch("/api/purchases", { cache: "no-store" })
-      .then((r) => r.json())
-      .then((d) => setHasPurchase((d.purchases?.length ?? 0) > 0))
-      .catch(() => {});
-  }, []);
-
-  const steps = [connected, hasMemory, hasListing, hasPurchase];
-  const doneCount = steps.filter(Boolean).length;
-  if (doneCount === steps.length) return null;
+  if (connected) return null;
 
   return (
     <div className="card p-6 mb-12">
-      <div className="flex items-center justify-between mb-1">
-        <h3 className="font-bold text-lg">Get started</h3>
-        <span className="text-xs font-semibold text-[var(--muted)]">{doneCount}/4 complete</span>
-      </div>
-      <div className="w-full h-1.5 bg-[var(--bg)] rounded-full overflow-hidden mb-2">
-        <div
-          className="h-full bg-[var(--primary)] transition-all"
-          style={{ width: `${(doneCount / steps.length) * 100}%` }}
-        />
-      </div>
-      <div className="divide-y divide-[var(--border)]">
-        <ChecklistItem done={connected}>Connect your wallet</ChecklistItem>
-        <ChecklistItem done={hasMemory} href="#store">Store your first memory</ChecklistItem>
-        <ChecklistItem done={hasListing} href="#store">List a memory for sale</ChecklistItem>
-        <ChecklistItem done={hasPurchase} href="/market">Buy something from the marketplace</ChecklistItem>
+      <div className="flex items-center gap-3">
+        <ChecklistItem done={false}>Connect your wallet to get started</ChecklistItem>
       </div>
       <a href="/guide" className="text-xs font-semibold text-[var(--primary)] mt-2 inline-block">
         New here? Read the full guide &rarr;
@@ -216,7 +193,7 @@ export default function Home() {
               Seal Your<br /><span className="text-[var(--primary)]">Machine Memory</span>
             </h1>
             <p className="text-[var(--muted)] text-base leading-relaxed mb-8 max-w-md">
-              Every memory is encrypted with AES-256 before it ever leaves your device, then distributed across Shelby&rsquo;s decentralized storage network. Only you hold the key &mdash; until you choose to sell it.
+              Every memory is encrypted with AES-256 before it ever leaves your device, then distributed across Shelby&rsquo;s decentralized storage network. Only you hold the key, until you choose to sell it.
             </p>
             <div className="flex gap-3 mb-8 flex-wrap">
               <a href="#store" className="btn-primary">
@@ -254,7 +231,7 @@ export default function Home() {
       </section>
 
       <div id="store" className="max-w-3xl mx-auto px-6 sm:px-10 pt-16 pb-14 flex flex-col gap-12">
-        <OnboardingChecklist hasMemory={memories.length > 0} hasListing={listedCount > 0} />
+        <OnboardingChecklist />
 
         <section>
           <h2 className="text-2xl font-bold tracking-tight mb-5">Store a new memory</h2>
