@@ -25,7 +25,7 @@ export default function Docs() {
       <Section n="01" title="Encryption">
         <p>
           Before anything leaves your browser or this server, memory content is encrypted with <strong className="text-[var(--ink)]">AES-256-GCM</strong> using
-          a fresh, random key generated per memory. Only the encrypted bytes are ever uploaded &mdash; the plaintext content and the key never travel together.
+          a fresh, random key generated per memory. Only the encrypted bytes are ever uploaded. The plaintext content and the key never travel together.
         </p>
         <p>
           The public <strong className="text-[var(--ink)]">summary</strong> field is the one exception: it&rsquo;s stored in plaintext by design, since it&rsquo;s
@@ -41,28 +41,31 @@ export default function Docs() {
         </p>
         <p>
           This app currently uploads under a single service account (configured via <code className="font-data text-xs bg-[var(--bg)] border border-[var(--border)] rounded px-1.5 py-0.5">SHELBY_PRIVATE_KEY</code>),
-          which keeps things simple for a demo deployment without requiring per-user wallets.
+          which keeps things simple for a demo deployment without requiring per-user wallets for the storage write itself.
         </p>
       </Section>
 
       <Section n="03" title="The marketplace">
         <p>
-          Listing a memory doesn&rsquo;t change where it&rsquo;s stored &mdash; it just marks it visible in the marketplace with a price. Since Shelby blobs are
+          Listing a memory doesn&rsquo;t change where it&rsquo;s stored. It just marks it visible in the marketplace with a price. Since Shelby blobs are
           addressable by account + blob name, the real access control has to be the decryption key, not the blob itself.
         </p>
         <p>
-          When someone buys a listed memory, this demo debits a simulated shelbyUSD balance and hands over the decryption key, then decrypts and returns the
-          content in the same request. A production version would replace that with an on-chain escrow contract and a proper key-release step.
+          When someone buys a listed memory, this demo debits a simulated shelbyUSD balance, credits the seller the same amount, and hands over the
+          decryption key. Buyers can also rate and favorite listings.
         </p>
       </Section>
 
-      <Section n="04" title="Architecture at a glance">
-        <ul className="flex flex-col gap-2">
-          <li><span className="font-data text-xs text-[var(--ink)]">Next.js API routes</span> &mdash; handle encrypt/upload, recall, publish, and marketplace purchase logic.</li>
-          <li><span className="font-data text-xs text-[var(--ink)]">Postgres (Neon)</span> &mdash; stores memory metadata, listings, and the demo ledger.</li>
-          <li><span className="font-data text-xs text-[var(--ink)]">Shelby SDK</span> &mdash; uploads/downloads the encrypted blobs.</li>
-          <li><span className="font-data text-xs text-[var(--ink)]">Aptos testnet</span> &mdash; underlies Shelby&rsquo;s coordination and payment layer.</li>
-        </ul>
+      <Section n="04" title="Wallet connection">
+        <p>
+          Memvault supports connecting an Aptos wallet (Petra) via the official <span className="font-data text-xs text-[var(--ink)]">@aptos-labs/wallet-adapter-react</span> package,
+          following the AIP-62 Wallet Standard. Once connected, your real Aptos address is visible in the header.
+        </p>
+        <p>
+          Note: the marketplace economy (balances, purchases, listings) still runs on the anonymous-cookie identity described above for this demo.
+          Migrating that identity fully to your connected wallet address, and having your wallet sign the actual Shelby storage transactions, is the
+          natural next step for a production version.
+        </p>
       </Section>
 
       <div className="card p-6 flex items-start gap-4">
