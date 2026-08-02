@@ -4,32 +4,36 @@ import { getOrCreateVisitorId } from "@/lib/visitor";
 
 export const runtime = "nodejs";
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { id: visitorId } = getOrCreateVisitorId(req);
-  const { listed, priceUsd } = (await req.json()) as { listed: boolean; priceUsd?: number };
-
-  if (listed && (!priceUsd || priceUsd <= 0)) {
-    return NextResponse.json({ error: "priceUsd must be > 0 to list a memory" }, { status: 400 });
-  }
+  const { listed, priceUsd, walletAddress } = (await req.json()) as {
+    listed: boolean;
+    priceUsd?: number;
+    walletAddress?: string;
+  };
 
   const db = sql();
-  const [record] = await db`
-    select id from memories where id = ${id} and creator_visitor_id = ${visitorId}
-  `;
-  if (!record) {
-    return NextResponse.json({ error: "Memory not found or not yours" }, { status: 404 });
+  const [record] = await db`select creator_visitor_id from memories where id = ${id}`;
+  if (!record) return NextResponse.json({ error: "Memory not found" }, { status: 404 });
+  if (record.creator_visitor_id !== visitorId) {
+    return NextResponse.json({ error: "You don't own this memory" }, { status: 403 });
   }
 
-  const [updated] = await db`
+  if (listed && (!priceUsd || priceUsd <= 0)) {
+    return NextResponse.json({ error: "priceUsd must be greater than 0 to list" }, { status: 400 });
+  }
+  if (listed && !walletAddress) {
+    return NextResponse.json({ error: "Connect a wallet before listing, so buyers can pay you directly" }, { status: 400 });
+  }
+
+  await db`
     update memories
-    set listed = ${listed}, price_usd = ${listed ? priceUsd : 0}
+    set listed = ${listed},
+        price_usd = ${listed ? priceUsd : 0},
+        creator_wallet_address = ${listed ? walletAddress : null}
     where id = ${id}
-    returning id, kind, tags, summary, listed, price_usd, created_at, expires_at
   `;
 
-  return NextResponse.json({ memory: updated });
+  return NextResponse.json({ ok: true });
 }
