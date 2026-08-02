@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import type { MarketListing } from "@/lib/types";
+import { SHELBY_USD_FA_ADDRESS, SHELBY_USD_DECIMALS } from "@/lib/constants";
 
 type SortMode = "newest" | "price-low" | "price-high" | "top-rated";
 
@@ -62,6 +63,7 @@ function WalletBalanceCard() {
 }
 
 export default function Market() {
+  const { connected, account, signAndSubmitTransaction } = useWallet();
   const [listings, setListings] = useState<MarketListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -91,11 +93,33 @@ export default function Market() {
     load();
   }, []);
 
-  async function handleBuy(id: string) {
+  async function handleBuy(listing: MarketListing) {
+    const id = listing.id;
     setBuying(id);
     setError(null);
     try {
-      const res = await fetch(`/api/market/${id}/buy`, { method: "POST" });
+      let txHash: string | undefined;
+
+      if (listing.creator_wallet_address && !listing.alreadyPurchased) {
+        if (!connected || !account) {
+          throw new Error("Connect your wallet first, this listing is paid for on-chain.");
+        }
+        const amount = Math.round(Number(listing.price_usd) * SHELBY_USD_DECIMALS);
+        const result = await signAndSubmitTransaction({
+          data: {
+            function: "0x1::primary_fungible_store::transfer",
+            typeArguments: ["0x1::fungible_asset::Metadata"],
+            functionArguments: [SHELBY_USD_FA_ADDRESS, listing.creator_wallet_address, amount],
+          },
+        });
+        txHash = result.hash;
+      }
+
+      const res = await fetch(`/api/market/${id}/buy`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ txHash }),
+      });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setUnlocked((prev) => ({ ...prev, [id]: data.content }));
@@ -157,7 +181,7 @@ export default function Market() {
       </div>
 
       <div className="text-xs text-[var(--muted)] border border-[var(--border)] bg-[var(--bg)] rounded-lg px-4 py-2.5 mb-2">
-        Purchases in this demo use internal test credits, separate from your wallet&rsquo;s real shelbyUSD shown above. See <a href="/docs" className="text-[var(--primary)] font-medium">Docs</a> for why.
+        New listings are paid for with a real on-chain transfer from your connected wallet. Older listings, created before wallet payments existed, still use internal test credits. See <a href="/docs" className="text-[var(--primary)] font-medium">Docs</a> for details.
       </div>
 
       {error && (
@@ -245,7 +269,7 @@ export default function Market() {
                     >
                       <StarIcon filled={m.isFavorite} />
                     </button>
-                    <button onClick={() => handleBuy(m.id)} disabled={buying === m.id} className="btn-accent">
+                    <button onClick={() => handleBuy(m)} disabled={buying === m.id} className="btn-accent">
                       {m.alreadyPurchased ? "Unlock (owned)" : buying === m.id ? "Processing..." : `Buy · ${m.price_usd}`}
                     </button>
                   </div>
