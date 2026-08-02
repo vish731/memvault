@@ -29,20 +29,20 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className="min-h-full flex flex-col">
         <WalletProvider>
           <header className="bg-[var(--surface)] border-b border-[var(--border)] px-6 sm:px-10 py-4 sticky top-0 z-20">
-            <div className="max-w-5xl mx-auto flex items-center justify-between gap-6">
-              <a href="/"><Logo /></a>
-              <nav className="hidden md:flex gap-6 items-center">
-                <a href="/" className="nav-link">My Memories</a>
-                <a href="/market" className="nav-link">Marketplace</a>
-                <a href="/purchases" className="nav-link">Purchases</a>
-                <a href="/favorites" className="nav-link">Favorites</a>
-                <a href="/docs" className="nav-link">Docs</a>
-                <a href="/start-here" className="badge-pill">
+            <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
+              <a href="/" className="shrink-0"><Logo /></a>
+              <nav className="hidden lg:flex gap-5 items-center">
+                <a href="/" className="nav-link whitespace-nowrap">My Memories</a>
+                <a href="/market" className="nav-link whitespace-nowrap">Marketplace</a>
+                <a href="/purchases" className="nav-link whitespace-nowrap">Purchases</a>
+                <a href="/favorites" className="nav-link whitespace-nowrap">Favorites</a>
+                <a href="/docs" className="nav-link whitespace-nowrap">Docs</a>
+                <a href="/start-here" className="badge-pill whitespace-nowrap">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-1.5L12 2z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" /></svg>
                   Start Here
                 </a>
               </nav>
-              <div className="hidden md:block">
+              <div className="hidden lg:block shrink-0">
                 <ConnectWalletButton />
               </div>
               <MobileNav />
