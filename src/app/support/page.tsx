@@ -9,11 +9,11 @@ const FAQS = [
   },
   {
     q: "What is shelbyUSD and why does my balance show 100 by default?",
-    a: "shelbyUSD is Shelby Protocol's unit for paying to read storage. In this demo, every new visitor starts with a simulated 100 shelbyUSD balance so you can test buying listings without needing real funds.",
+    a: "shelbyUSD is Shelby Protocol's unit for paying to read storage. For listings created before wallet payments were added, every new visitor gets a simulated 100 shelbyUSD test balance so those older listings still work.",
   },
   {
     q: "What does connecting a wallet do here?",
-    a: "It links your real Aptos address (via Petra) to your session, using the official AIP-62 wallet adapter standard. In this demo build, the marketplace balance and purchases still use a separate anonymous-cookie identity. Full wallet-based identity is the next step, noted on the Docs page.",
+    a: "It links your real Aptos address (via Petra) to your session, using the official AIP-62 wallet adapter standard. Right now, favorites and purchase history for older listings still run on a separate anonymous-cookie identity rather than your wallet. Full wallet-based identity is the next step, noted on the Docs page.",
   },
   {
     q: "Why did my \"Store memory\" or \"Buy\" action fail?",
