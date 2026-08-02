@@ -6,13 +6,12 @@ export const runtime = "nodejs";
 
 export async function GET(req: NextRequest) {
   const { id: visitorId, isNew } = getOrCreateVisitorId(req);
-  const { searchParams } = new URL(req.url);
-  const tag = searchParams.get("tag");
+  const tag = req.nextUrl.searchParams.get("tag");
 
   const db = sql();
   const rows = tag
     ? await db`
-        select m.id, m.kind, m.tags, m.summary, m.price_usd, m.created_at,
+        select m.id, m.kind, m.tags, m.summary, m.price_usd, m.created_at, m.creator_wallet_address,
           coalesce(r.avg_rating, null) as avg_rating,
           coalesce(r.review_count, 0) as review_count
         from memories m
@@ -24,7 +23,7 @@ export async function GET(req: NextRequest) {
         order by m.created_at desc
       `
     : await db`
-        select m.id, m.kind, m.tags, m.summary, m.price_usd, m.created_at,
+        select m.id, m.kind, m.tags, m.summary, m.price_usd, m.created_at, m.creator_wallet_address,
           coalesce(r.avg_rating, null) as avg_rating,
           coalesce(r.review_count, 0) as review_count
         from memories m
@@ -36,19 +35,11 @@ export async function GET(req: NextRequest) {
         order by m.created_at desc
       `;
 
-  const purchased = await db`
-    select memory_id from purchases where visitor_id = ${visitorId}
-  `;
-  const purchasedIds = new Set(
-    purchased.map((p: Record<string, unknown>) => p.memory_id as string)
-  );
+  const purchased = await db`select memory_id from purchases where visitor_id = ${visitorId}`;
+  const purchasedIds = new Set(purchased.map((p: Record<string, unknown>) => p.memory_id as string));
 
-  const favorited = await db`
-    select memory_id from favorites where visitor_id = ${visitorId}
-  `;
-  const favoritedIds = new Set(
-    favorited.map((f: Record<string, unknown>) => f.memory_id as string)
-  );
+  const favorited = await db`select memory_id from favorites where visitor_id = ${visitorId}`;
+  const favoritedIds = new Set(favorited.map((f: Record<string, unknown>) => f.memory_id as string));
 
   const listings = rows.map((r: Record<string, unknown>) => ({
     ...r,
