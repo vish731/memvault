@@ -1,19 +1,19 @@
-import { Account, Ed25519Account, Ed25519PrivateKey, Network } from "@aptos-labs/ts-sdk";
+import { Account, Aptos, AptosConfig, Ed25519Account, Ed25519PrivateKey, Network } from "@aptos-labs/ts-sdk";
 import { ShelbyNodeClient } from "@shelby-protocol/sdk/node";
+import { SHELBY_USD_FA_ADDRESS, SHELBY_USD_DECIMALS } from "@/lib/constants";
 
-/**
- * This app uses ONE Shelby/Aptos account (a "service account") to store every
- * memory, regardless of which visitor created it. That's the simplest thing
- * that works for a demo deployed on Vercel functions, which have no durable
- * local filesystem to hold a per-user keypair.
- *
- * SHELBY_PRIVATE_KEY should be an Aptos Ed25519 private key
- * (e.g. "ed25519-priv-0x...") for a funded testnet account. Generate one
- * locally with the Shelby CLI (`shelby init`) or Aptos CLI, fund it via the
- * testnet faucets, then paste the private key into your Vercel env vars.
- */
+export { SHELBY_USD_FA_ADDRESS, SHELBY_USD_DECIMALS };
+
 let cachedClient: ShelbyNodeClient | null = null;
 let cachedSigner: Ed25519Account | null = null;
+let cachedAptos: Aptos | null = null;
+
+export function getAptos(): Aptos {
+  if (!cachedAptos) {
+    cachedAptos = new Aptos(new AptosConfig({ network: Network.SHELBYNET }));
+  }
+  return cachedAptos;
+}
 
 export function getShelbyClient(): ShelbyNodeClient {
   if (cachedClient) return cachedClient;
