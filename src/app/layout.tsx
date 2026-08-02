@@ -37,9 +37,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 <a href="/purchases" className="nav-link">Purchases</a>
                 <a href="/favorites" className="nav-link">Favorites</a>
                 <a href="/docs" className="nav-link">Docs</a>
-                <a href="/guide" className="badge-pill">
+                <a href="/start-here" className="badge-pill">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-1.5L12 2z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" /></svg>
-                  Guide
+                  Start Here
                 </a>
               </nav>
               <div className="hidden md:block">
@@ -72,7 +72,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)] mb-3">Resources</p>
                   <ul className="flex flex-col gap-2 text-sm">
-                    <li><a href="/guide" className="nav-link">Getting Started Guide</a></li>
+                    <li><a href="/start-here" className="nav-link">Start Here</a></li>
                     <li><a href="/docs" className="nav-link">Docs</a></li>
                     <li><a href="/support" className="nav-link">Support</a></li>
                   </ul>
@@ -86,7 +86,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 </div>
               </div>
               <div className="flex items-center justify-between flex-wrap gap-3 pt-6 border-t border-[var(--border)]">
-                <p className="text-xs text-[var(--muted)]">&copy; {new Date().getFullYear()} Memvault. Built as a demo on Shelby Protocol testnet.</p>
+                <p className="text-xs text-[var(--muted)]">&copy; {new Date().getFullYear()} Memvault. Built on Shelby Protocol testnet.</p>
                 <span className="badge-pill">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 2L4 6v6c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V6l-8-4z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" /></svg>
                   AES-256 &middot; Shelby &middot; Aptos
