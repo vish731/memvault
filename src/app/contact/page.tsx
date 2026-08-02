@@ -7,7 +7,7 @@ export default function Contact() {
       </span>
       <h1 className="text-4xl font-extrabold tracking-tight mb-4">Get in touch</h1>
       <p className="text-[var(--muted)] text-[0.9375rem] leading-relaxed mb-10 max-w-lg">
-        This is a demo project, so there&rsquo;s no support team behind it, but here&rsquo;s where to go depending on what you need.
+        This is a solo-built project, so there isn&rsquo;t a support team behind it, but here&rsquo;s where to go depending on what you need.
       </p>
 
       <div className="grid sm:grid-cols-2 gap-4">
