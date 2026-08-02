@@ -28,7 +28,7 @@ function VaultIllustration() {
       <circle cx="120" cy="90" r="90" fill="var(--primary-soft)" opacity="0.7" />
       <circle cx="300" cy="250" r="70" fill="var(--accent-soft)" opacity="0.7" />
       {[[80, 60], [320, 70], [70, 260], [330, 230]].map(([x, y], i) => (
-        <line key={i} x1="200" y1="170" x2={x} y2={y} stroke="var(--border)" strokeWidth="2" strokeDasharray="5 6" />
+        <line key={i} className="flow-line" x1="200" y1="170" x2={x} y2={y} stroke="var(--primary)" strokeWidth="2" strokeDasharray="5 6" opacity="0.45" />
       ))}
       {[{ x: 80, y: 60 }, { x: 320, y: 70 }, { x: 70, y: 260 }, { x: 330, y: 230 }].map((n, i) => (
         <g key={i}>
@@ -38,11 +38,13 @@ function VaultIllustration() {
           <line x1={n.x - 5} y1={n.y + 2} x2={n.x + 5} y2={n.y + 2} stroke="var(--primary)" strokeWidth="1.4" />
         </g>
       ))}
-      <circle cx="200" cy="170" r="62" fill="var(--surface)" stroke="var(--border)" strokeWidth="1.5" />
-      <rect x="178" y="160" width="44" height="34" rx="6" fill="var(--primary)" />
-      <path d="M186 160v-12a14 14 0 0 1 28 0v12" fill="none" stroke="var(--primary)" strokeWidth="6" strokeLinecap="round" />
-      <circle cx="200" cy="176" r="4.5" fill="var(--surface)" />
-      <rect x="197.5" y="178" width="5" height="8" rx="1.5" fill="var(--surface)" />
+      <g className="pulse-vault">
+        <circle cx="200" cy="170" r="62" fill="var(--surface)" stroke="var(--border)" strokeWidth="1.5" />
+        <rect x="178" y="160" width="44" height="34" rx="6" fill="var(--primary)" />
+        <path d="M186 160v-12a14 14 0 0 1 28 0v12" fill="none" stroke="var(--primary)" strokeWidth="6" strokeLinecap="round" />
+        <circle cx="200" cy="176" r="4.5" fill="var(--surface)" />
+        <rect x="197.5" y="178" width="5" height="8" rx="1.5" fill="var(--surface)" />
+      </g>
     </svg>
   );
 }
@@ -190,24 +192,24 @@ export default function Home() {
       <section className="px-6 sm:px-10 pt-14 pb-8">
         <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center">
           <div>
-            <span className="badge-pill mb-6">
+            <span className="badge-pill mb-6 animate-in">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2L4 6v6c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V6l-8-4z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" /></svg>
               Trusted by builders on Shelby Protocol
             </span>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-5 leading-[1.05]">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-5 leading-[1.05] animate-in delay-1">
               Seal Your<br /><span className="text-[var(--primary)]">Machine Memory</span>
             </h1>
-            <p className="text-[var(--muted)] text-base leading-relaxed mb-8 max-w-md">
+            <p className="text-[var(--muted)] text-base leading-relaxed mb-8 max-w-md animate-in delay-2">
               Every memory is encrypted with AES-256 before it ever leaves your device, then distributed across Shelby&rsquo;s decentralized storage network. Only you hold the key, until you choose to sell it.
             </p>
-            <div className="flex gap-3 mb-8 flex-wrap">
+            <div className="flex gap-3 mb-8 flex-wrap animate-in delay-3">
               <a href="#store" className="btn-primary">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                 Store a memory
               </a>
               <a href="/market" className="btn-ghost flex items-center">Browse marketplace</a>
             </div>
-            <div className="flex gap-4 flex-wrap">
+            <div className="flex gap-4 flex-wrap animate-in delay-4">
               <div className="stat-chip">
                 <span className="icon-badge"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" /></svg></span>
                 <div><p className="font-bold text-sm leading-none">AES-256</p><p className="text-xs text-[var(--muted)] mt-1">Encrypted at rest</p></div>
@@ -219,17 +221,17 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="relative mx-2 sm:mx-0">
+          <div className="relative mx-2 sm:mx-0 animate-in delay-2">
             <div className="card p-5 sm:p-8">
               <VaultIllustration />
             </div>
-            <div className="floating-badge !px-2.5 !py-2 sm:!px-4 sm:!py-2.5 -top-3 -left-2 sm:-top-5 sm:-left-5">
+            <div className="floating-badge float-badge !px-2.5 !py-2 sm:!px-4 sm:!py-2.5 -top-3 -left-2 sm:-top-5 sm:-left-5">
               <span className="icon-badge !w-7 !h-7 sm:!w-9 sm:!h-9"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="4" y="11" width="16" height="9" rx="2" stroke="currentColor" strokeWidth="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg></span>
-              <div><p className="font-bold text-xs sm:text-sm leading-none">{memories.length}</p><p className="text-[10px] sm:text-xs text-[var(--muted)] mt-1 whitespace-nowrap">Memories sealed</p></div>
+              <div><p className="font-bold text-xs sm:text-sm leading-none stat-number">{memories.length}</p><p className="text-[10px] sm:text-xs text-[var(--muted)] mt-1 whitespace-nowrap">Memories sealed</p></div>
             </div>
-            <div className="floating-badge !px-2.5 !py-2 sm:!px-4 sm:!py-2.5 -bottom-3 -right-2 sm:-bottom-5 sm:-right-5">
+            <div className="floating-badge float-badge float-delay !px-2.5 !py-2 sm:!px-4 sm:!py-2.5 -bottom-3 -right-2 sm:-bottom-5 sm:-right-5">
               <span className="icon-badge accent !w-7 !h-7 sm:!w-9 sm:!h-9"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 3h2l2.4 12.2a2 2 0 0 0 2 1.8h7.2a2 2 0 0 0 2-1.6L20 8H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></span>
-              <div><p className="font-bold text-xs sm:text-sm leading-none">{listedCount}</p><p className="text-[10px] sm:text-xs text-[var(--muted)] mt-1 whitespace-nowrap">Listed for sale</p></div>
+              <div><p className="font-bold text-xs sm:text-sm leading-none stat-number">{listedCount}</p><p className="text-[10px] sm:text-xs text-[var(--muted)] mt-1 whitespace-nowrap">Listed for sale</p></div>
             </div>
           </div>
         </div>
@@ -288,7 +290,7 @@ export default function Home() {
           ) : (
             <ul className="flex flex-col gap-3">
               {memories.map((m) => (
-                <li key={m.id} className="card p-5">
+                <li key={m.id} className="card card-hover p-5">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-3">
                       <LockIcon open={!!recalled[m.id]} />
