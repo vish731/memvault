@@ -87,6 +87,7 @@ function OnboardingChecklist() {
 }
 
 export default function Home() {
+  const { account } = useWallet();
   const [memories, setMemories] = useState<MemoryRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -160,6 +161,10 @@ export default function Home() {
     setError(null);
     let priceUsd: number | undefined;
     if (listed) {
+      if (!account) {
+        setError("Connect your wallet before listing a memory for sale, so buyers can pay you directly.");
+        return;
+      }
       const input = window.prompt("List price in shelbyUSD:", "2.5");
       if (!input) return;
       priceUsd = Number(input);
@@ -168,7 +173,7 @@ export default function Home() {
       const res = await fetch(`/api/memories/${id}/publish`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ listed, priceUsd }),
+        body: JSON.stringify({ listed, priceUsd, walletAddress: account?.address.toString() }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
