@@ -14,4 +14,5 @@ export interface MarketListing extends MemoryRecord {
   isFavorite: boolean;
   avg_rating: number | string | null;
   review_count: number | string;
+  creator_wallet_address: string | null;
 }
