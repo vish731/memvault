@@ -13,12 +13,12 @@ function Section({ n, title, children }: { n: string; title: string; children: R
 export default function Docs() {
   return (
     <div className="max-w-3xl mx-auto px-6 sm:px-10 py-14">
-      <span className="badge-pill mb-5">
+      <span className="badge-pill mb-5 animate-in">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" /></svg>
         Documentation
       </span>
-      <h1 className="text-4xl font-extrabold tracking-tight mb-4">How Memvault works</h1>
-      <p className="text-[var(--muted)] text-[0.9375rem] leading-relaxed mb-12 max-w-lg">
+      <h1 className="text-4xl font-extrabold tracking-tight mb-4 animate-in delay-1">How Memvault works</h1>
+      <p className="text-[var(--muted)] text-[0.9375rem] leading-relaxed mb-12 max-w-lg animate-in delay-2">
         Here&rsquo;s what actually happens under the hood when you store a memory or buy one from someone else.
       </p>
 
