@@ -172,3 +172,71 @@ select.field {
   padding: 0.65rem 1rem;
   box-shadow: 0 4px 16px -4px rgba(16, 24, 40, 0.15);
 }
+
+/* --- Premium micro-animations --- */
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-in {
+  opacity: 0;
+  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.delay-1 { animation-delay: 0.08s; }
+.delay-2 { animation-delay: 0.16s; }
+.delay-3 { animation-delay: 0.24s; }
+.delay-4 { animation-delay: 0.32s; }
+.delay-5 { animation-delay: 0.4s; }
+
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.float-badge {
+  animation: floatY 4s ease-in-out infinite;
+}
+.float-badge.float-delay {
+  animation-delay: 1.6s;
+}
+
+@keyframes dashFlow {
+  to { stroke-dashoffset: -22; }
+}
+.flow-line {
+  animation: dashFlow 1.4s linear infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(15, 118, 110, 0)); }
+  50% { filter: drop-shadow(0 0 6px rgba(15, 118, 110, 0.45)); }
+}
+.pulse-vault {
+  animation: pulseGlow 2.6s ease-in-out infinite;
+}
+
+.card-hover {
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(16, 24, 40, 0.06), 0 12px 24px -8px rgba(16, 24, 40, 0.14);
+  border-color: rgba(15, 118, 110, 0.25);
+}
+
+@keyframes countUp {
+  from { opacity: 0.3; }
+  to { opacity: 1; }
+}
+.stat-number {
+  animation: countUp 0.4s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-in, .float-badge, .flow-line, .pulse-vault, .card-hover, .stat-number {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
