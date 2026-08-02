@@ -19,7 +19,7 @@ create table if not exists memories (
 create index if not exists memories_listed_idx on memories (listed);
 create index if not exists memories_creator_idx on memories (creator_visitor_id);
 
--- demo-only simulated shelbyUSD balances, keyed by an anonymous visitor id (cookie).
+-- Simulated shelbyUSD balances, keyed by an anonymous visitor id (cookie).
 -- Only used as a fallback for listings created before wallet-based payments existed.
 create table if not exists ledger (
   visitor_id  text primary key,
