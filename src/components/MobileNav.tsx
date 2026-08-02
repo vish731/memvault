@@ -9,7 +9,7 @@ const LINKS = [
   { href: "/purchases", label: "Purchases" },
   { href: "/favorites", label: "Favorites" },
   { href: "/docs", label: "Docs" },
-  { href: "/guide", label: "Guide" },
+  { href: "/start-here", label: "Start Here" },
 ];
 
 export default function MobileNav() {
