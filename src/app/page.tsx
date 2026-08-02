@@ -79,8 +79,8 @@ function OnboardingChecklist() {
       <div className="flex items-center gap-3">
         <ChecklistItem done={false}>Connect your wallet to get started</ChecklistItem>
       </div>
-      <a href="/guide" className="text-xs font-semibold text-[var(--primary)] mt-2 inline-block">
-        New here? Read the full guide &rarr;
+      <a href="/start-here" className="text-xs font-semibold text-[var(--primary)] mt-2 inline-block">
+        New here? Start here &rarr;
       </a>
     </div>
   );
@@ -243,7 +243,7 @@ export default function Home() {
           <form onSubmit={handleCreate} className="card flex flex-col gap-5 p-7 sm:p-8">
             <label className="flex flex-col gap-2">
               <span className="field-label">Memory content</span>
-              <textarea required placeholder="e.g. User prefers dark mode, works in IST, building a Shelby marketplace demo." value={content} onChange={(e) => setContent(e.target.value)} className="field min-h-[120px] resize-y" />
+              <textarea required placeholder="e.g. User prefers dark mode, works in IST, building on a Shelby marketplace." value={content} onChange={(e) => setContent(e.target.value)} className="field min-h-[120px] resize-y" />
             </label>
             <label className="flex flex-col gap-2">
               <span className="field-label">Public summary</span>
