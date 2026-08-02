@@ -61,12 +61,12 @@ export default function Favorites() {
 
   return (
     <div className="max-w-3xl mx-auto px-6 sm:px-10 py-14">
-      <span className="badge-pill mb-5">
+      <span className="badge-pill mb-5 animate-in">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3l2.9 6 6.6.9-4.8 4.6 1.1 6.5-5.8-3.1-5.8 3.1 1.1-6.5-4.8-4.6 6.6-.9L12 3z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /></svg>
         Saved for later
       </span>
-      <h1 className="text-4xl font-extrabold tracking-tight mb-4">Your favorites</h1>
-      <p className="text-[var(--muted)] text-[0.9375rem] leading-relaxed mb-10 max-w-lg">
+      <h1 className="text-4xl font-extrabold tracking-tight mb-4 animate-in delay-1">Your favorites</h1>
+      <p className="text-[var(--muted)] text-[0.9375rem] leading-relaxed mb-10 max-w-lg animate-in delay-2">
         Listings you&rsquo;ve saved from the marketplace to decide on later.
       </p>
 
@@ -87,7 +87,7 @@ export default function Favorites() {
       ) : (
         <ul className="flex flex-col gap-3">
           {items.map((m) => (
-            <li key={m.id} className="card p-5">
+            <li key={m.id} className="card card-hover p-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-[0.9375rem] font-semibold">{m.summary}</p>
