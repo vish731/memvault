@@ -168,12 +168,12 @@ export default function Market() {
     <div className="max-w-3xl mx-auto px-6 sm:px-10 py-14">
       <div className="flex items-start justify-between gap-6 flex-wrap mb-2">
         <div>
-          <span className="badge-pill mb-5">
+          <span className="badge-pill mb-5 animate-in">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 3h2l2.4 12.2a2 2 0 0 0 2 1.8h7.2a2 2 0 0 0 2-1.6L20 8H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><circle cx="9" cy="20" r="1" fill="currentColor" /><circle cx="17" cy="20" r="1" fill="currentColor" /></svg>
             Pay-per-read, unlocked instantly
           </span>
-          <h1 className="text-4xl font-extrabold tracking-tight mb-3">Marketplace</h1>
-          <p className="text-[var(--muted)] text-[0.9375rem] leading-relaxed max-w-lg">
+          <h1 className="text-4xl font-extrabold tracking-tight mb-3 animate-in delay-1">Marketplace</h1>
+          <p className="text-[var(--muted)] text-[0.9375rem] leading-relaxed max-w-lg animate-in delay-2">
             Entries listed for sale by other holders. Content stays encrypted until purchase releases the key.
           </p>
         </div>
