@@ -30,12 +30,12 @@ export default function Support() {
 
   return (
     <div className="max-w-3xl mx-auto px-6 sm:px-10 py-14">
-      <span className="badge-pill mb-5">
+      <span className="badge-pill mb-5 animate-in">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" /><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.5-2 1.8-2 3.5M12 17h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
         Support
       </span>
-      <h1 className="text-4xl font-extrabold tracking-tight mb-4">Frequently asked questions</h1>
-      <p className="text-[var(--muted)] text-[0.9375rem] leading-relaxed mb-10 max-w-lg">
+      <h1 className="text-4xl font-extrabold tracking-tight mb-4 animate-in delay-1">Frequently asked questions</h1>
+      <p className="text-[var(--muted)] text-[0.9375rem] leading-relaxed mb-10 max-w-lg animate-in delay-2">
         Common questions about encryption, the marketplace, and troubleshooting. Still stuck? See the <a href="/contact" className="text-[var(--primary)] font-medium">Contact</a> page.
       </p>
 
@@ -43,7 +43,7 @@ export default function Support() {
         {FAQS.map((item, i) => {
           const isOpen = open === i;
           return (
-            <div key={i} className="card overflow-hidden">
+            <div key={i} className="card card-hover overflow-hidden">
               <button
                 onClick={() => setOpen(isOpen ? null : i)}
                 className="w-full flex items-center justify-between gap-4 text-left px-6 py-5"
