@@ -18,11 +18,11 @@ function Step({ n, title, children }: { n: number; title: string; children: Reac
 export default function StartHere() {
   return (
     <div className="max-w-3xl mx-auto px-6 sm:px-10 py-14">
-      <span className="badge-pill mb-5">
+      <span className="badge-pill mb-5 animate-in">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-1.5L12 2z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" /></svg>
         New here? Start here
       </span>
-      <h1 className="text-4xl font-extrabold tracking-tight mb-4">Start here</h1>
+      <h1 className="text-4xl font-extrabold tracking-tight mb-4 animate-in delay-1">Start here</h1>
       <p className="text-[var(--muted)] text-[0.9375rem] leading-relaxed mb-12 max-w-lg">
         Everything you need to go from zero to storing and trading encrypted memories, even if you&rsquo;ve never
         touched a crypto wallet before.
