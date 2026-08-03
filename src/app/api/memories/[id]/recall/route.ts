@@ -6,16 +6,14 @@ import { getOrCreateVisitorId } from "@/lib/visitor";
 
 export const runtime = "nodejs";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { id: visitorId } = getOrCreateVisitorId(req);
+  const wallet = req.nextUrl.searchParams.get("wallet");
 
   const db = sql();
   const [record] = await db`
-    select id, creator_visitor_id, blob_name, enc_key
+    select id, creator_visitor_id, creator_wallet_address, blob_name, enc_key
     from memories
     where id = ${id}
   `;
@@ -24,17 +22,10 @@ export async function GET(
     return NextResponse.json({ error: "Memory not found" }, { status: 404 });
   }
 
-  // Owner can always recall for free. Non-owners must have purchased it.
-  if (record.creator_visitor_id !== visitorId) {
-    const [purchase] = await db`
-      select 1 from purchases where memory_id = ${id} and visitor_id = ${visitorId}
-    `;
-    if (!purchase) {
-      return NextResponse.json(
-        { error: "You don't have access to this memory. Buy it from the marketplace first." },
-        { status: 403 }
-      );
-    }
+  const ownsByWallet = wallet && record.creator_wallet_address && record.creator_wallet_address === wallet;
+  const ownsByCookie = record.creator_visitor_id === visitorId;
+  if (!ownsByWallet && !ownsByCookie) {
+    return NextResponse.json({ error: "You don't own this memory" }, { status: 403 });
   }
 
   const client = getShelbyClient();
