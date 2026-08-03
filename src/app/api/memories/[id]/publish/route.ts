@@ -14,24 +14,29 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   };
 
   const db = sql();
-  const [record] = await db`select creator_visitor_id from memories where id = ${id}`;
+  const [record] = await db`select creator_visitor_id, creator_wallet_address from memories where id = ${id}`;
   if (!record) return NextResponse.json({ error: "Memory not found" }, { status: 404 });
-  if (record.creator_visitor_id !== visitorId) {
+
+  const ownsByWallet = walletAddress && record.creator_wallet_address && record.creator_wallet_address === walletAddress;
+  const ownsByCookie = record.creator_visitor_id === visitorId;
+  if (!ownsByWallet && !ownsByCookie) {
     return NextResponse.json({ error: "You don't own this memory" }, { status: 403 });
   }
 
   if (listed && (!priceUsd || priceUsd <= 0)) {
     return NextResponse.json({ error: "priceUsd must be greater than 0 to list" }, { status: 400 });
   }
-  if (listed && !walletAddress) {
+  if (listed && !walletAddress && !record.creator_wallet_address) {
     return NextResponse.json({ error: "Connect a wallet before listing, so buyers can pay you directly" }, { status: 400 });
   }
 
+  // Only ever set the wallet address, never clear it, so identity set at
+  // creation time (or an earlier listing) is preserved when unlisting.
   await db`
     update memories
     set listed = ${listed},
         price_usd = ${listed ? priceUsd : 0},
-        creator_wallet_address = ${listed ? walletAddress : null}
+        creator_wallet_address = coalesce(${walletAddress ?? null}, creator_wallet_address)
     where id = ${id}
   `;
 
