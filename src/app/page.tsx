@@ -104,7 +104,8 @@ export default function Home() {
   async function loadMemories() {
     setLoading(true);
     try {
-      const res = await fetch("/api/memories", { cache: "no-store" });
+      const url = account ? `/api/memories?wallet=${account.address.toString()}` : "/api/memories";
+      const res = await fetch(url, { cache: "no-store" });
       const data = await res.json();
       if (res.ok) setMemories(data.memories);
       else setError(data.error);
@@ -117,7 +118,8 @@ export default function Home() {
 
   useEffect(() => {
     loadMemories();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [account?.address]);
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -132,6 +134,7 @@ export default function Home() {
           summary,
           kind,
           tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
+          walletAddress: account?.address.toString(),
         }),
       });
       const data = await res.json();
@@ -150,7 +153,10 @@ export default function Home() {
   async function handleRecall(id: string) {
     setError(null);
     try {
-      const res = await fetch(`/api/memories/${id}/recall`, { cache: "no-store" });
+      const url = account
+        ? `/api/memories/${id}/recall?wallet=${account.address.toString()}`
+        : `/api/memories/${id}/recall`;
+      const res = await fetch(url, { cache: "no-store" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setRecalled((prev) => ({ ...prev, [id]: data.content }));
