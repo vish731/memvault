@@ -52,39 +52,48 @@ export async function POST(req: NextRequest) {
   if (!content || !summary) {
     return NextResponse.json({ error: "content and summary are required" }, { status: 400 });
   }
+  if (!walletAddress) {
+    return NextResponse.json({ error: "Connect your wallet before storing a memory." }, { status: 400 });
+  }
 
-  const client = getShelbyClient();
-  const signer = getServiceSigner();
+  try {
+    const client = getShelbyClient();
+    const signer = getServiceSigner();
 
-  const key = generateMemoryKey();
-  const payload = encryptMemory(content, key);
-  const blobName = `memories/${crypto.randomUUID()}.enc.json`;
-  const expirationMicros = (Date.now() + (ttlDays ?? 30) * 24 * 60 * 60 * 1000) * 1000;
+    const key = generateMemoryKey();
+    const payload = encryptMemory(content, key);
+    const blobName = `memories/${crypto.randomUUID()}.enc.json`;
+    const expirationMicros = (Date.now() + (ttlDays ?? 30) * 24 * 60 * 60 * 1000) * 1000;
 
-  await client.upload({
-    signer,
-    blobData: Buffer.from(JSON.stringify(payload)),
-    blobName,
-    expirationMicros,
-  });
+    await client.upload({
+      signer,
+      blobData: Buffer.from(JSON.stringify(payload)),
+      blobName,
+      expirationMicros,
+    });
 
-  const db = sql();
-  const [record] = await db`
-    insert into memories (creator_visitor_id, creator_wallet_address, blob_name, kind, tags, summary, enc_key, expires_at)
-    values (
-      ${visitorId},
-      ${walletAddress ?? null},
-      ${blobName},
-      ${kind ?? "fact"},
-      ${tags ?? []},
-      ${summary},
-      ${key},
-      to_timestamp(${expirationMicros / 1_000_000})
-    )
-    returning id, kind, tags, summary, listed, price_usd, created_at, expires_at
-  `;
+    const db = sql();
+    const [record] = await db`
+      insert into memories (creator_visitor_id, creator_wallet_address, blob_name, kind, tags, summary, enc_key, expires_at)
+      values (
+        ${visitorId},
+        ${walletAddress ?? null},
+        ${blobName},
+        ${kind ?? "fact"},
+        ${tags ?? []},
+        ${summary},
+        ${key},
+        to_timestamp(${expirationMicros / 1_000_000})
+      )
+      returning id, kind, tags, summary, listed, price_usd, created_at, expires_at
+    `;
 
-  const res = NextResponse.json({ memory: record }, { status: 201 });
-  if (isNew) res.cookies.set(VISITOR_COOKIE, visitorId, { httpOnly: true, sameSite: "lax" });
-  return res;
+    const res = NextResponse.json({ memory: record }, { status: 201 });
+    if (isNew) res.cookies.set(VISITOR_COOKIE, visitorId, { httpOnly: true, sameSite: "lax" });
+    return res;
+  } catch (err) {
+    console.error("Failed to store memory:", err);
+    const message = err instanceof Error ? err.message : "Failed to store memory. Please try again.";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }
