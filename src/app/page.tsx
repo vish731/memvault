@@ -123,6 +123,10 @@ export default function Home() {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
+    if (!account) {
+      setError("Please connect your wallet before storing a memory.");
+      return;
+    }
     setSubmitting(true);
     setError(null);
     try {
@@ -137,7 +141,7 @@ export default function Home() {
           walletAddress: account?.address.toString(),
         }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({ error: "The server returned an unexpected response." }));
       if (!res.ok) throw new Error(data.error ?? "Failed to store memory");
       setContent("");
       setSummary("");
@@ -272,10 +276,15 @@ export default function Home() {
                 </select>
               </label>
             </div>
-            <button type="submit" disabled={submitting} className="btn-primary self-start">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-              {submitting ? "Encrypting & uploading..." : "Store memory"}
-            </button>
+            <div className="flex items-center gap-3 flex-wrap">
+              <button type="submit" disabled={submitting || !account} className="btn-primary self-start">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                {submitting ? "Encrypting & uploading..." : "Store memory"}
+              </button>
+              {!account && (
+                <span className="text-xs text-[var(--muted)]">Connect your wallet first to store a memory.</span>
+              )}
+            </div>
           </form>
         </section>
 
