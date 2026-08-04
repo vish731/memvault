@@ -17,7 +17,7 @@ export function getAptos(): Aptos {
 
 export function getShelbyClient(): ShelbyNodeClient {
   if (cachedClient) return cachedClient;
-  const apiKey = process.env.SHELBY_API_KEY;
+  const apiKey = process.env.SHELBY_API_KEY?.trim();
   if (!apiKey) {
     throw new Error("Missing SHELBY_API_KEY env var (get one at geomi.dev).");
   }
@@ -27,7 +27,7 @@ export function getShelbyClient(): ShelbyNodeClient {
 
 export function getServiceSigner(): Ed25519Account {
   if (cachedSigner) return cachedSigner;
-  const pk = process.env.SHELBY_PRIVATE_KEY;
+  const pk = process.env.SHELBY_PRIVATE_KEY?.trim();
   if (!pk) {
     throw new Error(
       "Missing SHELBY_PRIVATE_KEY env var. Generate + fund a testnet account, then set its private key here."
