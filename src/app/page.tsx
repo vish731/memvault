@@ -2,7 +2,36 @@
 
 import { useEffect, useState } from "react";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import { motion, useMotionValue, useSpring, useTransform } from "motion/react";
 import type { MemoryRecord } from "@/lib/types";
+
+function TiltCard({ children }: { children: React.ReactNode }) {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const rotateX = useSpring(useTransform(y, [-0.5, 0.5], [10, -10]), { stiffness: 200, damping: 20 });
+  const rotateY = useSpring(useTransform(x, [-0.5, 0.5], [-10, 10]), { stiffness: 200, damping: 20 });
+
+  function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    x.set((e.clientX - rect.left) / rect.width - 0.5);
+    y.set((e.clientY - rect.top) / rect.height - 0.5);
+  }
+  function handleMouseLeave() {
+    x.set(0);
+    y.set(0);
+  }
+
+  return (
+    <motion.div
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{ rotateX, rotateY, transformPerspective: 900 }}
+      className="will-change-transform"
+    >
+      {children}
+    </motion.div>
+  );
+}
 
 function LockIcon({ open }: { open: boolean }) {
   return (
@@ -199,27 +228,66 @@ export default function Home() {
 
   return (
     <>
-      <section className="px-6 sm:px-10 pt-14 pb-8">
+      <section className="px-6 sm:px-10 pt-14 pb-8 overflow-hidden">
         <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center">
           <div>
-            <span className="badge-pill mb-6 animate-in">
+            <motion.span
+              className="badge-pill mb-6"
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2L4 6v6c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V6l-8-4z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" /></svg>
               Trusted by builders on Shelby Protocol
-            </span>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-5 leading-[1.05] animate-in delay-1">
+            </motion.span>
+            <motion.h1
+              className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-5 leading-[1.05]"
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
+            >
               Seal Your<br /><span className="text-[var(--primary)]">Machine Memory</span>
-            </h1>
-            <p className="text-[var(--muted)] text-base leading-relaxed mb-8 max-w-md animate-in delay-2">
+            </motion.h1>
+            <motion.p
+              className="text-[var(--muted)] text-base leading-relaxed mb-8 max-w-md"
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}
+            >
               Every memory is encrypted with AES-256 before it ever leaves your device, then distributed across Shelby&rsquo;s decentralized storage network. Only you hold the key, until you choose to sell it.
-            </p>
-            <div className="flex gap-3 mb-8 flex-wrap animate-in delay-3">
-              <a href="#store" className="btn-primary">
+            </motion.p>
+            <motion.div
+              className="flex gap-3 mb-8 flex-wrap"
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.24, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <motion.a
+                href="#store"
+                className="btn-primary"
+                whileHover={{ scale: 1.04, y: -2 }}
+                whileTap={{ scale: 0.97 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                 Store a memory
-              </a>
-              <a href="/market" className="btn-ghost flex items-center">Browse marketplace</a>
-            </div>
-            <div className="flex gap-4 flex-wrap animate-in delay-4">
+              </motion.a>
+              <motion.a
+                href="/market"
+                className="btn-ghost flex items-center"
+                whileHover={{ scale: 1.04, y: -2 }}
+                whileTap={{ scale: 0.97 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              >
+                Browse marketplace
+              </motion.a>
+            </motion.div>
+            <motion.div
+              className="flex gap-4 flex-wrap"
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.32, ease: [0.16, 1, 0.3, 1] }}
+            >
               <div className="stat-chip">
                 <span className="icon-badge"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" /></svg></span>
                 <div><p className="font-bold text-sm leading-none">AES-256</p><p className="text-xs text-[var(--muted)] mt-1">Encrypted at rest</p></div>
@@ -228,29 +296,46 @@ export default function Home() {
                 <span className="icon-badge accent"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="6" cy="7" r="2.5" stroke="currentColor" strokeWidth="2" /><circle cx="18" cy="7" r="2.5" stroke="currentColor" strokeWidth="2" /><circle cx="12" cy="18" r="2.5" stroke="currentColor" strokeWidth="2" /><path d="M8 8.5L11 16M16 8.5L13 16" stroke="currentColor" strokeWidth="2" /></svg></span>
                 <div><p className="font-bold text-sm leading-none">Decentralized</p><p className="text-xs text-[var(--muted)] mt-1">Shelby storage network</p></div>
               </div>
-            </div>
+            </motion.div>
           </div>
 
-          <div className="relative mx-2 sm:mx-0 animate-in delay-2">
-            <div className="card p-5 sm:p-8">
-              <VaultIllustration />
-            </div>
-            <div className="floating-badge float-badge !px-2.5 !py-2 sm:!px-4 sm:!py-2.5 -top-3 -left-2 sm:-top-5 sm:-left-5">
+          <motion.div
+            className="relative mx-2 sm:mx-0"
+            initial={{ opacity: 0, scale: 0.92, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <TiltCard>
+              <div className="card p-5 sm:p-8">
+                <VaultIllustration />
+              </div>
+            </TiltCard>
+            <motion.div
+              className="floating-badge float-badge !px-2.5 !py-2 sm:!px-4 sm:!py-2.5 -top-3 -left-2 sm:-top-5 sm:-left-5"
+              initial={{ opacity: 0, x: -14 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+            >
               <span className="icon-badge !w-7 !h-7 sm:!w-9 sm:!h-9"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="4" y="11" width="16" height="9" rx="2" stroke="currentColor" strokeWidth="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg></span>
               <div><p className="font-bold text-xs sm:text-sm leading-none stat-number">{memories.length}</p><p className="text-[10px] sm:text-xs text-[var(--muted)] mt-1 whitespace-nowrap">Memories sealed</p></div>
-            </div>
-            <div className="floating-badge float-badge float-delay !px-2.5 !py-2 sm:!px-4 sm:!py-2.5 -bottom-3 -right-2 sm:-bottom-5 sm:-right-5">
+            </motion.div>
+            <motion.div
+              className="floating-badge float-badge float-delay !px-2.5 !py-2 sm:!px-4 sm:!py-2.5 -bottom-3 -right-2 sm:-bottom-5 sm:-right-5"
+              initial={{ opacity: 0, x: 14 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+            >
               <span className="icon-badge accent !w-7 !h-7 sm:!w-9 sm:!h-9"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 3h2l2.4 12.2a2 2 0 0 0 2 1.8h7.2a2 2 0 0 0 2-1.6L20 8H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></span>
               <div><p className="font-bold text-xs sm:text-sm leading-none stat-number">{listedCount}</p><p className="text-[10px] sm:text-xs text-[var(--muted)] mt-1 whitespace-nowrap">Listed for sale</p></div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
       <div id="store" className="max-w-3xl mx-auto px-6 sm:px-10 pt-16 pb-14 flex flex-col gap-12">
         <OnboardingChecklist />
 
-        <section>
+        <motion.section initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-80px" }} transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}>
           <h2 className="text-2xl font-bold tracking-tight mb-5">Store a new memory</h2>
           <form onSubmit={handleCreate} className="card flex flex-col gap-5 p-7 sm:p-8">
             <label className="flex flex-col gap-2">
@@ -286,7 +371,7 @@ export default function Home() {
               )}
             </div>
           </form>
-        </section>
+        </motion.section>
 
         {error && (
           <div className="text-sm text-[var(--danger)] border border-[var(--danger)]/20 bg-[var(--danger-soft)] rounded-xl p-4 -mt-8 font-medium">
@@ -294,7 +379,7 @@ export default function Home() {
           </div>
         )}
 
-        <section>
+        <motion.section initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-80px" }} transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}>
           <h2 className="text-2xl font-bold tracking-tight mb-5">Your memories</h2>
           {loading ? (
             <p className="text-[var(--muted)] text-sm">Loading&hellip;</p>
@@ -336,7 +421,7 @@ export default function Home() {
               ))}
             </ul>
           )}
-        </section>
+        </motion.section>
       </div>
     </>
   );
