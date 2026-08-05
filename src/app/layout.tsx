@@ -3,6 +3,7 @@ import "./globals.css";
 import WalletProvider from "@/components/WalletProvider";
 import ConnectWalletButton from "@/components/ConnectWalletButton";
 import MobileNav from "@/components/MobileNav";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export const metadata: Metadata = {
   title: "Memvault, encrypted AI memory & marketplace",
@@ -26,6 +27,13 @@ function Logo() {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className="h-full antialiased">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('memvault-theme');if(t==='dark'){document.documentElement.setAttribute('data-theme','dark');}}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col">
         <WalletProvider>
           <header className="bg-[var(--surface)] border-b border-[var(--border)] px-6 sm:px-10 py-4 sticky top-0 z-20">
@@ -42,8 +50,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                   Start Here
                 </a>
               </nav>
-              <div className="hidden lg:block shrink-0">
-                <ConnectWalletButton />
+              <div className="flex items-center gap-3 shrink-0">
+                <ThemeToggle />
+                <div className="hidden lg:block">
+                  <ConnectWalletButton />
+                </div>
               </div>
               <MobileNav />
             </div>
