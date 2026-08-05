@@ -14,6 +14,24 @@
   --accent-soft: #fdecdd;
   --danger: #d92d20;
   --danger-soft: #fee4e2;
+  color-scheme: light;
+  transition: background-color 300ms ease, color 300ms ease;
+}
+
+[data-theme="dark"] {
+  --bg: #0a0e14;
+  --surface: #121821;
+  --ink: #edf1f5;
+  --muted: #8b96a5;
+  --border: #232b38;
+  --primary: #2dd4bf;
+  --primary-dark: #14b8a6;
+  --primary-soft: #133b37;
+  --accent: #fb923c;
+  --accent-soft: #3a2412;
+  --danger: #f87171;
+  --danger-soft: #3a1616;
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -30,6 +48,10 @@ body {
   color: var(--ink);
   font-family: var(--font-sans);
   overflow-x: hidden;
+}
+
+.card, .field, .badge-pill, .icon-badge, .stat-chip, .floating-badge, .btn-ghost, header, footer {
+  transition: background-color 300ms ease, border-color 300ms ease, color 300ms ease, box-shadow 300ms ease;
 }
 
 .font-data { font-family: var(--font-data); }
