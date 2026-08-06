@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import { motion, AnimatePresence } from "motion/react";
 import type { MarketListing } from "@/lib/types";
 import { SHELBY_USD_FA_ADDRESS, SHELBY_USD_DECIMALS } from "@/lib/constants";
 
@@ -246,8 +247,17 @@ export default function Market() {
           </div>
         ) : (
           <ul className="flex flex-col gap-3">
-            {visible.map((m) => (
-              <li key={m.id} className="card card-hover p-5">
+            <AnimatePresence>
+              {visible.map((m, i) => (
+                <motion.li
+                  key={m.id}
+                  className="card card-hover p-5"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.96 }}
+                  transition={{ duration: 0.4, delay: i * 0.05, ease: [0.16, 1, 0.3, 1] }}
+                  layout
+                >
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
@@ -262,23 +272,33 @@ export default function Market() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <button
+                    <motion.button
                       onClick={() => handleFavorite(m.id)}
                       aria-label="Save to favorites"
                       className={`icon-badge ${m.isFavorite ? "accent" : ""}`}
+                      whileTap={{ scale: 1.3 }}
+                      transition={{ type: "spring", stiffness: 500, damping: 15 }}
                     >
                       <StarIcon filled={m.isFavorite} />
-                    </button>
-                    <button onClick={() => handleBuy(m)} disabled={buying === m.id} className="btn-accent">
+                    </motion.button>
+                    <motion.button
+                      onClick={() => handleBuy(m)}
+                      disabled={buying === m.id}
+                      className="btn-accent"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.96 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                    >
                       {m.alreadyPurchased ? "Unlock (owned)" : buying === m.id ? "Processing..." : `Buy · ${m.price_usd}`}
-                    </button>
+                    </motion.button>
                   </div>
                 </div>
                 {unlocked[m.id] && (
                   <pre className="mt-4 text-xs font-data bg-[var(--bg)] border border-[var(--border)] rounded-lg p-4 whitespace-pre-wrap">{unlocked[m.id]}</pre>
                 )}
-              </li>
-            ))}
+                </motion.li>
+              ))}
+            </AnimatePresence>
           </ul>
         )}
       </div>
