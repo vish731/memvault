@@ -5,31 +5,74 @@ import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { motion, useMotionValue, useSpring, useTransform } from "motion/react";
 import type { MemoryRecord } from "@/lib/types";
 
-function TiltCard({ children }: { children: React.ReactNode }) {
+function VaultScene() {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  const rotateX = useSpring(useTransform(y, [-0.5, 0.5], [10, -10]), { stiffness: 200, damping: 20 });
-  const rotateY = useSpring(useTransform(x, [-0.5, 0.5], [-10, 10]), { stiffness: 200, damping: 20 });
+  const springX = useSpring(x, { stiffness: 150, damping: 15 });
+  const springY = useSpring(y, { stiffness: 150, damping: 15 });
+
+  const rotateX = useTransform(springY, (v) => v * -12);
+  const rotateY = useTransform(springX, (v) => v * 12);
+  const bgX = useTransform(springX, (v) => v * 10);
+  const bgY = useTransform(springY, (v) => v * 10);
+  const midX = useTransform(springX, (v) => v * 24);
+  const midY = useTransform(springY, (v) => v * 24);
+  const fgX = useTransform(springX, (v) => v * 42);
+  const fgY = useTransform(springY, (v) => v * 42);
 
   function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
     const rect = e.currentTarget.getBoundingClientRect();
     x.set((e.clientX - rect.left) / rect.width - 0.5);
     y.set((e.clientY - rect.top) / rect.height - 0.5);
   }
-  function handleMouseLeave() {
+  function reset() {
     x.set(0);
     y.set(0);
   }
 
   return (
-    <motion.div
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      style={{ rotateX, rotateY, transformPerspective: 900 }}
-      className="will-change-transform"
-    >
-      {children}
-    </motion.div>
+    <div onMouseMove={handleMouseMove} onMouseLeave={reset} style={{ perspective: 1000 }}>
+      <motion.div
+        className="card p-5 sm:p-8 relative overflow-hidden will-change-transform"
+        style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
+      >
+        {/* Depth layer 1: background glow blobs, barely moves (furthest away) */}
+        <motion.svg viewBox="0 0 400 340" className="w-full h-auto absolute inset-0 p-5 sm:p-8" style={{ x: bgX, y: bgY }}>
+          <circle cx="120" cy="90" r="90" fill="var(--primary-soft)" opacity="0.7" />
+          <circle cx="300" cy="250" r="70" fill="var(--accent-soft)" opacity="0.7" />
+        </motion.svg>
+
+        {/* Depth layer 2: connection lines + storage nodes, mid-distance */}
+        <motion.svg viewBox="0 0 400 340" className="w-full h-auto absolute inset-0 p-5 sm:p-8" style={{ x: midX, y: midY }}>
+          {[[80, 60], [320, 70], [70, 260], [330, 230]].map(([lx, ly], i) => (
+            <line key={i} className="flow-line" x1="200" y1="170" x2={lx} y2={ly} stroke="var(--primary)" strokeWidth="2" strokeDasharray="5 6" opacity="0.45" />
+          ))}
+          {[{ x: 80, y: 60 }, { x: 320, y: 70 }, { x: 70, y: 260 }, { x: 330, y: 230 }].map((n, i) => (
+            <g key={i}>
+              <circle cx={n.x} cy={n.y} r="26" fill="var(--surface)" stroke="var(--border)" strokeWidth="1.5" />
+              <rect x={n.x - 8} y={n.y - 9} width="16" height="18" rx="2" fill="none" stroke="var(--primary)" strokeWidth="1.6" />
+              <line x1={n.x - 5} y1={n.y - 3} x2={n.x + 5} y2={n.y - 3} stroke="var(--primary)" strokeWidth="1.4" />
+              <line x1={n.x - 5} y1={n.y + 2} x2={n.x + 5} y2={n.y + 2} stroke="var(--primary)" strokeWidth="1.4" />
+            </g>
+          ))}
+        </motion.svg>
+
+        {/* Depth layer 3: the vault itself, closest to the viewer, moves the most */}
+        <motion.svg
+          viewBox="0 0 400 340"
+          className="w-full h-auto relative"
+          style={{ x: fgX, y: fgY, translateZ: 60 }}
+        >
+          <g className="pulse-vault">
+            <circle cx="200" cy="170" r="62" fill="var(--surface)" stroke="var(--border)" strokeWidth="1.5" />
+            <rect x="178" y="160" width="44" height="34" rx="6" fill="var(--primary)" />
+            <path d="M186 160v-12a14 14 0 0 1 28 0v12" fill="none" stroke="var(--primary)" strokeWidth="6" strokeLinecap="round" />
+            <circle cx="200" cy="176" r="4.5" fill="var(--surface)" />
+            <rect x="197.5" y="178" width="5" height="8" rx="1.5" fill="var(--surface)" />
+          </g>
+        </motion.svg>
+      </motion.div>
+    </div>
   );
 }
 
@@ -48,33 +91,6 @@ function LockIcon({ open }: { open: boolean }) {
         </svg>
       )}
     </span>
-  );
-}
-
-function VaultIllustration() {
-  return (
-    <svg viewBox="0 0 400 340" className="w-full h-auto">
-      <circle cx="120" cy="90" r="90" fill="var(--primary-soft)" opacity="0.7" />
-      <circle cx="300" cy="250" r="70" fill="var(--accent-soft)" opacity="0.7" />
-      {[[80, 60], [320, 70], [70, 260], [330, 230]].map(([x, y], i) => (
-        <line key={i} className="flow-line" x1="200" y1="170" x2={x} y2={y} stroke="var(--primary)" strokeWidth="2" strokeDasharray="5 6" opacity="0.45" />
-      ))}
-      {[{ x: 80, y: 60 }, { x: 320, y: 70 }, { x: 70, y: 260 }, { x: 330, y: 230 }].map((n, i) => (
-        <g key={i}>
-          <circle cx={n.x} cy={n.y} r="26" fill="var(--surface)" stroke="var(--border)" strokeWidth="1.5" />
-          <rect x={n.x - 8} y={n.y - 9} width="16" height="18" rx="2" fill="none" stroke="var(--primary)" strokeWidth="1.6" />
-          <line x1={n.x - 5} y1={n.y - 3} x2={n.x + 5} y2={n.y - 3} stroke="var(--primary)" strokeWidth="1.4" />
-          <line x1={n.x - 5} y1={n.y + 2} x2={n.x + 5} y2={n.y + 2} stroke="var(--primary)" strokeWidth="1.4" />
-        </g>
-      ))}
-      <g className="pulse-vault">
-        <circle cx="200" cy="170" r="62" fill="var(--surface)" stroke="var(--border)" strokeWidth="1.5" />
-        <rect x="178" y="160" width="44" height="34" rx="6" fill="var(--primary)" />
-        <path d="M186 160v-12a14 14 0 0 1 28 0v12" fill="none" stroke="var(--primary)" strokeWidth="6" strokeLinecap="round" />
-        <circle cx="200" cy="176" r="4.5" fill="var(--surface)" />
-        <rect x="197.5" y="178" width="5" height="8" rx="1.5" fill="var(--surface)" />
-      </g>
-    </svg>
   );
 }
 
@@ -305,11 +321,7 @@ export default function Home() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
           >
-            <TiltCard>
-              <div className="card p-5 sm:p-8">
-                <VaultIllustration />
-              </div>
-            </TiltCard>
+            <VaultScene />
             <motion.div
               className="floating-badge float-badge !px-2.5 !py-2 sm:!px-4 sm:!py-2.5 -top-3 -left-2 sm:-top-5 sm:-left-5"
               initial={{ opacity: 0, x: -14 }}
