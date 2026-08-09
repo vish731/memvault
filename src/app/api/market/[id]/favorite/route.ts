@@ -7,6 +7,7 @@ export const runtime = "nodejs";
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { id: visitorId, isNew } = getOrCreateVisitorId(req);
+  const { walletAddress } = (await req.json().catch(() => ({}))) as { walletAddress?: string };
   const db = sql();
 
   const [existing] = await db`select 1 from favorites where memory_id = ${id} and visitor_id = ${visitorId}`;
@@ -16,7 +17,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     await db`delete from favorites where memory_id = ${id} and visitor_id = ${visitorId}`;
     favorited = false;
   } else {
-    await db`insert into favorites (visitor_id, memory_id) values (${visitorId}, ${id}) on conflict do nothing`;
+    await db`
+      insert into favorites (visitor_id, wallet_address, memory_id)
+      values (${visitorId}, ${walletAddress ?? null}, ${id})
+      on conflict do nothing
+    `;
     favorited = true;
   }
 
