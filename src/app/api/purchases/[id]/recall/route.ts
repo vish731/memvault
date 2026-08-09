@@ -9,11 +9,16 @@ export const runtime = "nodejs";
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { id: visitorId } = getOrCreateVisitorId(req);
+  const wallet = req.nextUrl.searchParams.get("wallet");
 
   const db = sql();
-  const [purchase] = await db`
-    select 1 from purchases where memory_id = ${id} and visitor_id = ${visitorId}
-  `;
+  const [purchase] = wallet
+    ? await db`
+        select 1 from purchases
+        where memory_id = ${id} and (buyer_wallet_address = ${wallet} or visitor_id = ${visitorId})
+      `
+    : await db`select 1 from purchases where memory_id = ${id} and visitor_id = ${visitorId}`;
+
   if (!purchase) {
     return NextResponse.json({ error: "You haven't purchased this memory" }, { status: 403 });
   }
