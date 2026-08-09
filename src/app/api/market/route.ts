@@ -35,10 +35,16 @@ export async function GET(req: NextRequest) {
         order by m.created_at desc
       `;
 
-  const purchased = await db`select memory_id from purchases where visitor_id = ${visitorId}`;
+  const wallet = req.nextUrl.searchParams.get("wallet");
+
+  const purchased = wallet
+    ? await db`select memory_id from purchases where buyer_wallet_address = ${wallet} or visitor_id = ${visitorId}`
+    : await db`select memory_id from purchases where visitor_id = ${visitorId}`;
   const purchasedIds = new Set(purchased.map((p: Record<string, unknown>) => p.memory_id as string));
 
-  const favorited = await db`select memory_id from favorites where visitor_id = ${visitorId}`;
+  const favorited = wallet
+    ? await db`select memory_id from favorites where wallet_address = ${wallet} or visitor_id = ${visitorId}`
+    : await db`select memory_id from favorites where visitor_id = ${visitorId}`;
   const favoritedIds = new Set(favorited.map((f: Record<string, unknown>) => f.memory_id as string));
 
   const listings = rows.map((r: Record<string, unknown>) => ({
