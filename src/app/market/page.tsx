@@ -76,7 +76,8 @@ export default function Market() {
   async function load() {
     setLoading(true);
     try {
-      const res = await fetch("/api/market", { cache: "no-store" });
+      const url = account ? `/api/market?wallet=${account.address.toString()}` : "/api/market";
+      const res = await fetch(url, { cache: "no-store" });
       const data = await res.json();
       if (res.ok) {
         setListings(data.listings);
@@ -92,7 +93,8 @@ export default function Market() {
 
   useEffect(() => {
     load();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [account?.address]);
 
   async function handleBuy(listing: MarketListing) {
     const id = listing.id;
@@ -135,7 +137,11 @@ export default function Market() {
   async function handleFavorite(id: string) {
     setListings((prev) => prev.map((m) => (m.id === id ? { ...m, isFavorite: !m.isFavorite } : m)));
     try {
-      await fetch(`/api/market/${id}/favorite`, { method: "POST" });
+      await fetch(`/api/market/${id}/favorite`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ walletAddress: account?.address.toString() }),
+      });
     } catch {
       await load();
     }
