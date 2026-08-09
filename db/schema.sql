@@ -49,6 +49,7 @@ create table if not exists reviews (
 -- saved-for-later listings, independent of purchase
 create table if not exists favorites (
   visitor_id text not null,
+  wallet_address text,
   memory_id  uuid not null references memories(id) on delete cascade,
   created_at timestamptz not null default now(),
   primary key (visitor_id, memory_id)
@@ -56,6 +57,7 @@ create table if not exists favorites (
 
 -- Safe to re-run: adds new columns to existing tables without touching existing data.
 alter table memories add column if not exists creator_wallet_address text;
+alter table favorites add column if not exists wallet_address text;
 alter table purchases add column if not exists buyer_wallet_address text;
 alter table purchases add column if not exists tx_hash text;
 create unique index if not exists purchases_tx_hash_idx on purchases (tx_hash) where tx_hash is not null;
