@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import crypto from "node:crypto";
 
-export const VISITOR_COOKIE = "memvault";
+export const VISITOR_COOKIE = "memvault_visitor";
 
 /** Reads the visitor id cookie if present, otherwise generates a fresh one. */
 export function getOrCreateVisitorId(req: NextRequest): { id: string; isNew: boolean } {
