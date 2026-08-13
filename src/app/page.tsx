@@ -23,7 +23,7 @@ function VaultScene() {
   function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
     const rect = e.currentTarget.getBoundingClientRect();
     x.set((e.clientX - rect.left) / rect.width - 0.5);
-    y.set((e.clientY - rect.top) / rect.height - 0.5);
+    y.set((e.clientY - rect.top) / rect.height - 0.1);
   }
   function reset() {
     x.set(0);
