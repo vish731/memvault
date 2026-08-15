@@ -23,7 +23,7 @@ create index if not exists memories_creator_idx on memories (creator_visitor_id)
 -- Only used as a fallback for listings created before wallet-based payments existed.
 create table if not exists ledger (
   visitor_id  text primary key,
-  balance     numeric(10, 2) not null default 10
+  balance     numeric(10, 2) not null default 100                                                                                                                                                                          
 );
 
 -- records which visitors have purchased which memories (so they can re-read for free after buying)
