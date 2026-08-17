@@ -35,7 +35,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   await db`
     update memories
     set listed = ${listed},
-        price_usd = ${listed ? 
+        price_usd = ${listed ? priceUsd : 0},
         creator_wallet_address = coalesce(${walletAddress ?? null}, creator_wallet_address)
     where id = ${id}
   `;
