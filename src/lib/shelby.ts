@@ -1,6 +1,7 @@
 import { Account, Aptos, AptosConfig, Ed25519Account, Ed25519PrivateKey, Network } from "@aptos-labs/ts-sdk";
 import { ShelbyNodeClient } from "@shelby-protocol/sdk/node";
 import { SHELBY_USD_FA_ADDRESS, SHELBY_USD_DECIMALS } from "@/lib/constants";
+import { sql as getSql } from "@/lib/db";
 
 export { SHELBY_USD_FA_ADDRESS, SHELBY_USD_DECIMALS };
 
@@ -45,6 +46,33 @@ export function getServiceSigner(): Ed25519Account {
   }
   cachedSigner = new Ed25519Account({ privateKey: new Ed25519PrivateKey(pk) });
   return cachedSigner;
+}
+
+/**
+ * Returns a dedicated Shelby account for this wallet address, creating one if
+ * it doesn't exist yet. This is custodial (the private key lives server-side
+ * in Postgres) because browser wallets can't yet sign Shelby's own
+ * BlobOwnerAuth challenge directly — but it does mean each user's uploads run
+ * against their own account instead of a single shared one, so one user's
+ * balance running dry doesn't block everyone else.
+ */
+export async function getOrCreateUserShelbyAccount(walletAddress: string): Promise<Ed25519Account> {
+  const sql = getSql();
+  const [existing] = await sql`
+    select private_key from shelby_accounts where wallet_address = ${walletAddress}
+  `;
+  if (existing) {
+    return new Ed25519Account({ privateKey: new Ed25519PrivateKey(existing.private_key as string) });
+  }
+
+  const account = Account.generate();
+  await sql`
+    insert into shelby_accounts (wallet_address, account_address, private_key)
+    values (${walletAddress}, ${account.accountAddress.toString()}, ${account.privateKey.toString()})
+    on conflict (wallet_address) do nothing
+  `;
+  const [row] = await sql`select private_key from shelby_accounts where wallet_address = ${walletAddress}`;
+  return new Ed25519Account({ privateKey: new Ed25519PrivateKey(row.private_key as string) });
 }
 
 export async function readAllBytes(readable: ReadableStream): Promise<Buffer> {
