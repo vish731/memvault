@@ -4,9 +4,10 @@ import WalletProvider from "@/components/WalletProvider";
 import ConnectWalletButton from "@/components/ConnectWalletButton";
 import MobileNav from "@/components/MobileNav";
 import ThemeToggle from "@/components/ThemeToggle";
+import ServiceAccountAlert from "@/components/ServiceAccountAlert";
 
 export const metadata: Metadata = {
-  title: "Memvault, encrypted AI memory & marketplace",
+  title: "Memvault — encrypted AI memory & marketplace",
   description: "Decentralized AI memory storage and pay-per-read data marketplace, built on Shelby Protocol.",
 };
 
@@ -59,6 +60,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               <MobileNav />
             </div>
           </header>
+
+          <ServiceAccountAlert />
 
           <main className="flex-1">{children}</main>
 
