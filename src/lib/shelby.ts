@@ -31,9 +31,8 @@ export function getShelbyClient(): ShelbyNodeClient {
   cachedClient = new ShelbyNodeClient({
     network: Network.SHELBYNET,
     apiKey,
-    // Required: without a resolvable location (account preference, per-write
-    // selection, or this hint), Shelby aborts writes on-chain.
-    locationHint: "us-east-1",
+    // Confirmed valid via aptos.view() -> <deployer>::location::activated_location_names
+    locationHint: "shelbynet-1",
   });
   return cachedClient;
 }
