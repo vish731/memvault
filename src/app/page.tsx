@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { motion, useMotionValue, useSpring, useTransform } from "motion/react";
 import type { MemoryRecord } from "@/lib/types";
-import PersonalAccountStatus from "@/components/PersonalAccountStatus";
 
 function VaultScene() {
   const x = useMotionValue(0);
@@ -339,7 +338,6 @@ export default function Home() {
 
       <div id="store" className="max-w-3xl mx-auto px-6 sm:px-10 pt-16 pb-14 flex flex-col gap-12">
         <OnboardingChecklist />
-        <PersonalAccountStatus />
 
         <section>
           <h2 className="text-2xl font-bold tracking-tight mb-5">Store a new memory</h2>
