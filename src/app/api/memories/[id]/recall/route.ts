@@ -13,7 +13,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const db = sql();
   const [record] = await db`
-    select id, creator_visitor_id, creator_wallet_address, blob_name, enc_key
+    select id, creator_visitor_id, creator_wallet_address, upload_account_address, blob_name, enc_key
     from memories
     where id = ${id}
   `;
@@ -29,10 +29,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 
   const client = getShelbyClient();
-  const signer = getServiceSigner();
+  // Download from wherever it was actually uploaded: the user's personal
+  // Shelby account if they had one funded at upload time, otherwise the
+  // shared service account.
+  const downloadAccount = record.upload_account_address ?? getServiceSigner().accountAddress.toString();
 
   const blob = await client.download({
-    account: signer.accountAddress.toString(),
+    account: downloadAccount,
     blobName: record.blob_name,
   });
   const buffer = await readAllBytes(blob.readable);
