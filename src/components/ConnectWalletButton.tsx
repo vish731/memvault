@@ -27,11 +27,36 @@ interface ShelbyAccountStatus {
   funded: boolean;
 }
 
+function CopyableAddress({ address, label }: { address: string; label: string }) {
+  const [copied, setCopied] = useState(false);
+
+  function copy() {
+    navigator.clipboard.writeText(address);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  }
+
+  return (
+    <div>
+      <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--muted)] mb-1">{label}</p>
+      <div className="flex items-center gap-2">
+        <span className="font-data text-sm text-[var(--ink)]">{truncate(address)}</span>
+        <button onClick={copy} aria-label="Copy address" className="text-[var(--muted)] hover:text-[var(--primary)] transition-colors">
+          {copied ? (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 7" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          ) : (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="11" height="11" rx="2" stroke="currentColor" strokeWidth="1.8" /><path d="M5 15V5a2 2 0 0 1 2-2h10" stroke="currentColor" strokeWidth="1.8" /></svg>
+          )}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function ProfilePanel({ onClose }: { onClose: () => void }) {
   const { account, disconnect } = useWallet();
   const [status, setStatus] = useState<ShelbyAccountStatus | null>(null);
   const [loading, setLoading] = useState(true);
-  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (!account) return;
@@ -48,59 +73,50 @@ function ProfilePanel({ onClose }: { onClose: () => void }) {
   if (!account) return null;
   const address = account.address.toString();
 
-  function copyAddress() {
-    navigator.clipboard.writeText(address);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  }
-
   return (
-    <div className="absolute right-0 top-full mt-2 card w-80 p-5 z-30">
-      <div className="flex items-center justify-between mb-1">
-        <span className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Your wallet</span>
+    <div className="absolute right-0 top-full mt-2 card w-72 p-4 z-30">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-[10px] font-semibold uppercase tracking-wide text-[var(--muted)]">Account</span>
         <button onClick={onClose} className="icon-badge !w-6 !h-6" aria-label="Close">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
         </button>
       </div>
-      <button onClick={copyAddress} className="font-data text-sm text-[var(--ink)] break-all text-left hover:text-[var(--primary)] transition-colors mb-4">
-        {address} {copied && <span className="text-[var(--primary)]">✓ copied</span>}
-      </button>
 
-      <div className="border-t border-[var(--border)] pt-4 mb-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)] mb-2">Personal Shelby account</p>
-        {loading ? (
-          <p className="text-xs text-[var(--muted)]">Loading&hellip;</p>
-        ) : status ? (
-          <>
-            <p className="font-data text-xs text-[var(--muted)] break-all mb-2">{status.address}</p>
-            <div className="flex items-center gap-3 mb-3">
-              <span className={`text-xs font-semibold rounded-full px-2 py-0.5 ${status.funded ? "text-[var(--primary-dark)] bg-[var(--primary-soft)]" : "text-[var(--accent)] bg-[var(--accent-soft)]"}`}>
-                {status.funded ? "Funded" : "Not funded"}
-              </span>
-              <span className="text-xs text-[var(--muted)] font-data">
-                {status.apt.toFixed(3)} APT &middot; {status.shelbyUsd.toFixed(2)} shelbyUSD
-              </span>
+      <CopyableAddress address={address} label="Wallet" />
+
+      <div className="border-t border-[var(--border)] my-3" />
+
+      <CopyableAddress address={status?.address ?? ""} label="Personal Shelby account" />
+
+      {!loading && status && (
+        <div className="mt-2.5">
+          <p className="text-xs text-[var(--muted)] font-data mb-2">
+            {status.apt.toFixed(3)} APT &middot; {status.shelbyUsd.toFixed(2)} shelbyUSD
+          </p>
+          {!status.funded && (
+            <div className="flex gap-1.5">
+              <a
+                href={`https://docs.shelby.xyz/apis/faucet/aptos?address=${status.address}&network=shelbynet`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-ghost !text-[11px] !px-2.5 !py-1"
+              >
+                + APT
+              </a>
+              <a
+                href={`https://docs.shelby.xyz/apis/faucet/shelbyusd?address=${status.address}&network=shelbynet`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-ghost !text-[11px] !px-2.5 !py-1"
+              >
+                + shelbyUSD
+              </a>
             </div>
-            {!status.funded && (
-              <div className="flex gap-2 flex-wrap">
-                <a href={`https://docs.shelby.xyz/apis/faucet/aptos?address=${status.address}&network=shelbynet`} target="_blank" rel="noopener noreferrer" className="btn-ghost text-xs">
-                  Fund with APT
-                </a>
-                <a href={`https://docs.shelby.xyz/apis/faucet/shelbyusd?address=${status.address}&network=shelbynet`} target="_blank" rel="noopener noreferrer" className="btn-ghost text-xs">
-                  Fund with ShelbyUSD
-                </a>
-              </div>
-            )}
-            {status.funded && (
-              <p className="text-xs text-[var(--muted)]">Your uploads use this account.</p>
-            )}
-          </>
-        ) : (
-          <p className="text-xs text-[var(--muted)]">Could not load account status.</p>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
-      <button onClick={() => disconnect()} className="btn-ghost text-xs w-full">
+      <button onClick={() => disconnect()} className="btn-ghost text-xs w-full mt-4">
         Disconnect
       </button>
     </div>
