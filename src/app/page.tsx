@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { motion, useMotionValue, useSpring, useTransform } from "motion/react";
 import type { MemoryRecord } from "@/lib/types";
+import PersonalAccountStatus from "@/components/PersonalAccountStatus";
 
 function VaultScene() {
   const x = useMotionValue(0);
@@ -36,13 +37,11 @@ function VaultScene() {
         className="card p-5 sm:p-8 relative overflow-hidden will-change-transform"
         style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
       >
-        {/* Depth layer 1: background glow blobs, barely moves (furthest away) */}
         <motion.svg viewBox="0 0 400 340" className="w-full h-auto absolute inset-0 p-5 sm:p-8" style={{ x: bgX, y: bgY }}>
           <circle cx="120" cy="90" r="90" fill="var(--primary-soft)" opacity="0.7" />
           <circle cx="300" cy="250" r="70" fill="var(--accent-soft)" opacity="0.7" />
         </motion.svg>
 
-        {/* Depth layer 2: connection lines + storage nodes, mid-distance */}
         <motion.svg viewBox="0 0 400 340" className="w-full h-auto absolute inset-0 p-5 sm:p-8" style={{ x: midX, y: midY }}>
           {[[80, 60], [320, 70], [70, 260], [330, 230]].map(([lx, ly], i) => (
             <line key={i} className="flow-line" x1="200" y1="170" x2={lx} y2={ly} stroke="var(--primary)" strokeWidth="2" strokeDasharray="5 6" opacity="0.45" />
@@ -57,12 +56,7 @@ function VaultScene() {
           ))}
         </motion.svg>
 
-        {/* Depth layer 3: the vault itself, closest to the viewer, moves the most */}
-        <motion.svg
-          viewBox="0 0 400 340"
-          className="w-full h-auto relative"
-          style={{ x: fgX, y: fgY, translateZ: 60 }}
-        >
+        <motion.svg viewBox="0 0 400 340" className="w-full h-auto relative" style={{ x: fgX, y: fgY, translateZ: 60 }}>
           <g className="pulse-vault">
             <circle cx="200" cy="170" r="62" fill="var(--surface)" stroke="var(--border)" strokeWidth="1.5" />
             <rect x="178" y="160" width="44" height="34" rx="6" fill="var(--primary)" />
@@ -144,7 +138,6 @@ export default function Home() {
   const [summary, setSummary] = useState("");
   const [tags, setTags] = useState("");
   const [kind, setKind] = useState<MemoryRecord["kind"]>("fact");
-
 
   async function loadMemories() {
     setLoading(true);
@@ -346,13 +339,14 @@ export default function Home() {
 
       <div id="store" className="max-w-3xl mx-auto px-6 sm:px-10 pt-16 pb-14 flex flex-col gap-12">
         <OnboardingChecklist />
+        <PersonalAccountStatus />
 
-        <motion.section initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-80px" }} transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}>
+        <section>
           <h2 className="text-2xl font-bold tracking-tight mb-5">Store a new memory</h2>
           <form onSubmit={handleCreate} className="card flex flex-col gap-5 p-7 sm:p-8">
             <label className="flex flex-col gap-2">
               <span className="field-label">Memory content</span>
-              <textarea required placeholder="e.g. User prefers dark mode, works in IST, building on a Shelby marketplace." value={content} onChange={(e) => setContent(e.target.value)} className="field min-h-[120px] resize-y" />
+              <textarea required placeholder="e.g. User prefers dark mode, works in IST, building a Shelby marketplace demo." value={content} onChange={(e) => setContent(e.target.value)} className="field min-h-[120px] resize-y" />
             </label>
             <label className="flex flex-col gap-2">
               <span className="field-label">Public summary</span>
@@ -383,7 +377,7 @@ export default function Home() {
               )}
             </div>
           </form>
-        </motion.section>
+        </section>
 
         {error && (
           <div className="text-sm text-[var(--danger)] border border-[var(--danger)]/20 bg-[var(--danger-soft)] rounded-xl p-4 -mt-8 font-medium">
@@ -391,7 +385,7 @@ export default function Home() {
           </div>
         )}
 
-        <motion.section initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-80px" }} transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}>
+        <section>
           <h2 className="text-2xl font-bold tracking-tight mb-5">Your memories</h2>
           {loading ? (
             <p className="text-[var(--muted)] text-sm">Loading&hellip;</p>
@@ -433,7 +427,7 @@ export default function Home() {
               ))}
             </ul>
           )}
-        </motion.section>
+        </section>
       </div>
     </>
   );
