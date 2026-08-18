@@ -23,15 +23,15 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     return NextResponse.json({ error: "You haven't purchased this memory" }, { status: 403 });
   }
 
-  const [record] = await db`select blob_name, enc_key from memories where id = ${id}`;
+  const [record] = await db`select blob_name, enc_key, upload_account_address from memories where id = ${id}`;
   if (!record) {
     return NextResponse.json({ error: "Memory not found" }, { status: 404 });
   }
 
   const client = getShelbyClient();
-  const signer = getServiceSigner();
+  const downloadAccount = record.upload_account_address ?? getServiceSigner().accountAddress.toString();
   const blob = await client.download({
-    account: signer.accountAddress.toString(),
+    account: downloadAccount,
     blobName: record.blob_name,
   });
   const buffer = await readAllBytes(blob.readable);
