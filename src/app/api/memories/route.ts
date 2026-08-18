@@ -2,7 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "node:crypto";
 import { sql } from "@/lib/db";
 import { encryptMemory, generateMemoryKey } from "@/lib/crypto";
-import { getServiceSigner, getShelbyClient } from "@/lib/shelby";
+import {
+  getAptos,
+  getOrCreateUserShelbyAccount,
+  getServiceSigner,
+  getShelbyClient,
+  SHELBY_USD_FA_ADDRESS,
+} from "@/lib/shelby";
 import { getOrCreateVisitorId, VISITOR_COOKIE } from "@/lib/visitor";
 
 export const runtime = "nodejs";
@@ -14,9 +20,6 @@ export async function GET(req: NextRequest) {
   const wallet = req.nextUrl.searchParams.get("wallet");
   const db = sql();
 
-  // A connected wallet is the durable identity: it survives clearing cookies or
-  // switching browsers/devices. We still match on the visitor cookie too, so
-  // memories created before a wallet was ever connected don't get orphaned.
   const rows = wallet
     ? await db`
         select id, kind, tags, summary, listed, price_usd, created_at, expires_at
@@ -58,7 +61,27 @@ export async function POST(req: NextRequest) {
 
   try {
     const client = getShelbyClient();
-    const signer = getServiceSigner();
+
+    // Prefer the user's own dedicated Shelby account if it's actually funded;
+    // otherwise fall back to the shared service account so storing still works
+    // while they get their personal account funded.
+    let signer = getServiceSigner();
+    let uploadAccountAddress: string | null = null;
+    try {
+      const userAccount = await getOrCreateUserShelbyAccount(walletAddress);
+      const aptos = getAptos();
+      const address = userAccount.accountAddress.toString();
+      const [aptOctas, shelbyUsdRaw] = await Promise.all([
+        aptos.getAccountAPTAmount({ accountAddress: address }).catch(() => 0),
+        aptos.getAccountCoinAmount({ accountAddress: address, faMetadataAddress: SHELBY_USD_FA_ADDRESS }).catch(() => 0),
+      ]);
+      if (aptOctas > 0 && shelbyUsdRaw > 0) {
+        signer = userAccount;
+        uploadAccountAddress = address;
+      }
+    } catch {
+      // Fall through to the shared service account.
+    }
 
     const key = generateMemoryKey();
     const payload = encryptMemory(content, key);
@@ -74,21 +97,19 @@ export async function POST(req: NextRequest) {
 
     const db = sql();
     const [record] = await db`
-      insert into memories (creator_visitor_id, creator_wallet_address, blob_name, kind, tags, summary, enc_key, expires_at)
+      insert into memories (
+        creator_visitor_id, creator_wallet_address, upload_account_address,
+        blob_name, kind, tags, summary, enc_key, expires_at
+      )
       values (
-        ${visitorId},
-        ${walletAddress ?? null},
-        ${blobName},
-        ${kind ?? "fact"},
-        ${tags ?? []},
-        ${summary},
-        ${key},
+        ${visitorId}, ${walletAddress}, ${uploadAccountAddress},
+        ${blobName}, ${kind ?? "fact"}, ${tags ?? []}, ${summary}, ${key},
         to_timestamp(${expirationMicros / 1_000_000})
       )
       returning id, kind, tags, summary, listed, price_usd, created_at, expires_at
     `;
 
-    const res = NextResponse.json({ memory: record }, { status: 201 });
+    const res = NextResponse.json({ memory: record, uploadedVia: uploadAccountAddress ? "personal" : "shared" }, { status: 201 });
     if (isNew) res.cookies.set(VISITOR_COOKIE, visitorId, { httpOnly: true, sameSite: "lax" });
     return res;
   } catch (err) {
