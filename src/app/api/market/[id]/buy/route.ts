@@ -51,7 +51,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   const db = sql();
   const [record] = await db`
-    select id, creator_visitor_id, creator_wallet_address, blob_name, enc_key, listed, price_usd
+    select id, creator_visitor_id, creator_wallet_address, upload_account_address,
+      blob_name, enc_key, listed, price_usd
     from memories where id = ${id}
   `;
   if (!record || !record.listed) {
@@ -116,9 +117,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   }
 
   const client = getShelbyClient();
-  const signer = getServiceSigner();
+  const downloadAccount = record.upload_account_address ?? getServiceSigner().accountAddress.toString();
   const blob = await client.download({
-    account: signer.accountAddress.toString(),
+    account: downloadAccount,
     blobName: record.blob_name,
   });
   const buffer = await readAllBytes(blob.readable);
