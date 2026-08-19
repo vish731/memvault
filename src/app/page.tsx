@@ -232,6 +232,22 @@ export default function Home() {
     }
   }
 
+  async function handleDelete(id: string) {
+    if (!window.confirm("Delete this memory? This removes it from Memvault permanently. This can't be undone.")) return;
+    setError(null);
+    try {
+      const url = account
+        ? `/api/memories/${id}?wallet=${account.address.toString()}`
+        : `/api/memories/${id}`;
+      const res = await fetch(url, { method: "DELETE" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      await loadMemories();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete memory");
+    }
+  }
+
   const listedCount = memories.filter((m) => m.listed).length;
 
   return (
@@ -416,6 +432,7 @@ export default function Home() {
                     <div className="flex gap-2 shrink-0">
                       <button onClick={() => handleRecall(m.id)} className="btn-ghost">Recall</button>
                       <button onClick={() => handlePublish(m.id, !m.listed)} className="btn-ghost">{m.listed ? "Unlist" : "List for sale"}</button>
+                      <button onClick={() => handleDelete(m.id)} className="btn-ghost !text-[var(--danger)] !border-[var(--danger)]/30">Delete</button>
                     </div>
                   </div>
                   {recalled[m.id] && (
