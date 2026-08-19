@@ -5,7 +5,6 @@ import { encryptMemory, generateMemoryKey } from "@/lib/crypto";
 import {
   getAptos,
   getOrCreateUserShelbyAccount,
-  getServiceSigner,
   getShelbyClient,
   SHELBY_USD_FA_ADDRESS,
 } from "@/lib/shelby";
@@ -62,26 +61,28 @@ export async function POST(req: NextRequest) {
   try {
     const client = getShelbyClient();
 
-    // Prefer the user's own dedicated Shelby account if it's actually funded;
-    // otherwise fall back to the shared service account so storing still works
-    // while they get their personal account funded.
-    let signer = getServiceSigner();
-    let uploadAccountAddress: string | null = null;
-    try {
-      const userAccount = await getOrCreateUserShelbyAccount(walletAddress);
-      const aptos = getAptos();
-      const address = userAccount.accountAddress.toString();
-      const [aptOctas, shelbyUsdRaw] = await Promise.all([
-        aptos.getAccountAPTAmount({ accountAddress: address }).catch(() => 0),
-        aptos.getAccountCoinAmount({ accountAddress: address, faMetadataAddress: SHELBY_USD_FA_ADDRESS }).catch(() => 0),
-      ]);
-      if (aptOctas > 0 && shelbyUsdRaw > 0) {
-        signer = userAccount;
-        uploadAccountAddress = address;
-      }
-    } catch {
-      // Fall through to the shared service account.
+    // Require the user's own funded Shelby account. No silent fallback to the
+    // shared account, so a failed/underfunded personal account surfaces as a
+    // clear error instead of quietly using shared funds.
+    const userAccount = await getOrCreateUserShelbyAccount(walletAddress);
+    const aptos = getAptos();
+    const uploadAccountAddress = userAccount.accountAddress.toString();
+    const [aptOctas, shelbyUsdRaw] = await Promise.all([
+      aptos.getAccountAPTAmount({ accountAddress: uploadAccountAddress }).catch(() => 0),
+      aptos.getAccountCoinAmount({ accountAddress: uploadAccountAddress, faMetadataAddress: SHELBY_USD_FA_ADDRESS }).catch(() => 0),
+    ]);
+
+    if (aptOctas <= 0 || shelbyUsdRaw <= 0) {
+      return NextResponse.json(
+        {
+          error: "Your personal Shelby account isn't funded yet. Fund it from your wallet profile panel (APT + ShelbyUSD), then try again.",
+          personalAccountAddress: uploadAccountAddress,
+        },
+        { status: 402 }
+      );
     }
+
+    const signer = userAccount;
 
     const key = generateMemoryKey();
     const payload = encryptMemory(content, key);
