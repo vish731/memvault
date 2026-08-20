@@ -129,7 +129,7 @@ function ProfilePanel({ onClose }: { onClose: () => void }) {
       <CopyableAddress address={address} label="Wallet" />
       {!loading && walletBalance && (
         <p className="text-xs text-[var(--muted)] font-data mt-1">
-          {walletBalance.apt.toFixed(3)} APT &middot; {walletBalance.balance.toFixed(2)} shelbyUSD
+          {(walletBalance.apt ?? 0).toFixed(3)} APT &middot; {(walletBalance.balance ?? 0).toFixed(2)} shelbyUSD
         </p>
       )}
 
@@ -140,7 +140,7 @@ function ProfilePanel({ onClose }: { onClose: () => void }) {
       {!loading && status && (
         <div className="mt-2.5">
           <p className="text-xs text-[var(--muted)] font-data mb-2">
-            {status.apt.toFixed(3)} APT &middot; {status.shelbyUsd.toFixed(2)} shelbyUSD
+            {(status.apt ?? 0).toFixed(3)} APT &middot; {(status.shelbyUsd ?? 0).toFixed(2)} shelbyUSD
           </p>
           {!status.funded && (
             <>
