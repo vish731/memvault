@@ -421,8 +421,8 @@ export default function Home() {
               ) : (
                 <div className="relative">
                   <textarea required placeholder="e.g. User prefers dark mode, works in IST, building a Shelby marketplace demo." value={content} onChange={(e) => setContent(e.target.value)} className="field min-h-[120px] resize-y w-full pb-9" />
-                  <label className="absolute bottom-2.5 right-3 text-xs font-normal text-[var(--muted)]/60 hover:text-[var(--primary)] transition-colors cursor-pointer flex items-center gap-1">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" opacity="0.7"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
+                  <label className="absolute bottom-2.5 right-3 text-sm font-medium text-[var(--primary)] hover:text-[var(--primary-dark)] transition-colors cursor-pointer flex items-center gap-1.5">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
                     Attach documents
                     <input type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
                   </label>
