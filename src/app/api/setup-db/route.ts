@@ -65,6 +65,8 @@ export async function GET() {
     `create unique index if not exists purchases_tx_hash_idx on purchases (tx_hash) where tx_hash is not null`,
     `alter table memories add column if not exists upload_account_address text`,
     `alter table memories add column if not exists listing_tx_hash text`,
+    `alter table memories drop constraint if exists memories_kind_check`,
+    `alter table memories add constraint memories_kind_check check (kind in ('conversation', 'fact', 'document', 'embedding', 'image'))`,
   ];
 
   const results: string[] = [];
