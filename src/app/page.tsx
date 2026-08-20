@@ -423,7 +423,7 @@ export default function Home() {
                   <textarea required placeholder="e.g. User prefers dark mode, works in IST, building a Shelby marketplace demo." value={content} onChange={(e) => setContent(e.target.value)} className="field min-h-[120px] resize-y w-full pb-9" />
                   <label className="absolute bottom-2.5 right-3 text-sm font-medium text-[var(--primary)] hover:text-[var(--primary-dark)] transition-colors cursor-pointer flex items-center gap-1.5">
                     <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
-                    Attach documents
+                    Attach documents (up to 3MB)
                     <input type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
                   </label>
                 </div>
@@ -431,7 +431,7 @@ export default function Home() {
             </label>
             <label className="flex flex-col gap-2">
               <span className="field-label">Public summary</span>
-              <input required placeholder="Shown in the marketplace if you list this for sale" value={summary} onChange={(e) => setSummary(e.target.value)} className="field" />
+              <input required maxLength={150} placeholder="Shown in the marketplace if you list this for sale" value={summary} onChange={(e) => setSummary(e.target.value)} className="field" />
             </label>
             <div className="flex gap-4 flex-wrap">
               <label className="flex-1 min-w-[200px] flex flex-col gap-2">
