@@ -1,6 +1,6 @@
 export interface MemoryRecord {
   id: string;
-  kind: "conversation" | "fact" | "document" | "embedding";
+  kind: "conversation" | "fact" | "document" | "embedding" | "image";
   tags: string[];
   summary: string;
   listed: boolean;
