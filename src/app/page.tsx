@@ -127,7 +127,7 @@ function OnboardingChecklist() {
 }
 
 export default function Home() {
-  const { account } = useWallet();
+  const { account, signAndSubmitTransaction } = useWallet();
   const [memories, setMemories] = useState<MemoryRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -209,6 +209,8 @@ export default function Home() {
   async function handlePublish(id: string, listed: boolean) {
     setError(null);
     let priceUsd: number | undefined;
+    let txHash: string | undefined;
+
     if (listed) {
       if (!account) {
         setError("Connect your wallet before listing a memory for sale, so buyers can pay you directly.");
@@ -217,12 +219,28 @@ export default function Home() {
       const input = window.prompt("List price in shelbyUSD:", "2.5");
       if (!input) return;
       priceUsd = Number(input);
+
+      // A tiny, real on-chain transaction (a 1-octa self-transfer) that
+      // stands as a verifiable, wallet-signed commitment to this listing.
+      try {
+        const result = await signAndSubmitTransaction({
+          data: {
+            function: "0x1::aptos_account::transfer",
+            functionArguments: [account.address.toString(), 1],
+          },
+        });
+        txHash = result.hash;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Listing was cancelled in your wallet.");
+        return;
+      }
     }
+
     try {
       const res = await fetch(`/api/memories/${id}/publish`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ listed, priceUsd, walletAddress: account?.address.toString() }),
+        body: JSON.stringify({ listed, priceUsd, walletAddress: account?.address.toString(), txHash }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
