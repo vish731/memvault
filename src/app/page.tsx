@@ -134,9 +134,35 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [recalled, setRecalled] = useState<Record<string, string>>({});
   const [content, setContent] = useState("");
+  const [imageDataUrl, setImageDataUrl] = useState<string | null>(null);
+  const [imageName, setImageName] = useState<string | null>(null);
   const [summary, setSummary] = useState("");
   const [tags, setTags] = useState("");
   const [kind, setKind] = useState<MemoryRecord["kind"]>("fact");
+
+  function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 3 * 1024 * 1024) {
+      setError("Image must be under 3MB.");
+      return;
+    }
+    setError(null);
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImageDataUrl(reader.result as string);
+      setImageName(file.name);
+      setKind("image");
+      if (!summary) setSummary(file.name);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function clearImage() {
+    setImageDataUrl(null);
+    setImageName(null);
+    if (kind === "image") setKind("fact");
+  }
 
   async function loadMemories() {
     setLoading(true);
@@ -164,6 +190,11 @@ export default function Home() {
       setError("Please connect your wallet before storing a memory.");
       return;
     }
+    const actualContent = kind === "image" ? imageDataUrl : content;
+    if (!actualContent) {
+      setError(kind === "image" ? "Choose an image first." : "Enter some content first.");
+      return;
+    }
     setSubmitting(true);
     setError(null);
     try {
@@ -171,7 +202,7 @@ export default function Home() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          content,
+          content: actualContent,
           summary,
           kind,
           tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
@@ -183,6 +214,7 @@ export default function Home() {
       setContent("");
       setSummary("");
       setTags("");
+      clearImage();
       await loadMemories();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -377,8 +409,24 @@ export default function Home() {
           <h2 className="text-2xl font-bold tracking-tight mb-5">Store a new memory</h2>
           <form onSubmit={handleCreate} className="card flex flex-col gap-5 p-7 sm:p-8">
             <label className="flex flex-col gap-2">
-              <span className="field-label">Memory content</span>
-              <textarea required placeholder="e.g. User prefers dark mode, works in IST, building a Shelby marketplace demo." value={content} onChange={(e) => setContent(e.target.value)} className="field min-h-[120px] resize-y" />
+              <div className="flex items-center justify-between">
+                <span className="field-label">Memory content</span>
+                <label className="text-xs font-medium text-[var(--primary)] cursor-pointer">
+                  {imageDataUrl ? "Change image" : "Attach image instead"}
+                  <input type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
+                </label>
+              </div>
+              {imageDataUrl ? (
+                <div className="relative">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={imageDataUrl} alt={imageName ?? "Selected image"} className="rounded-lg border border-[var(--border)] max-h-64 w-auto object-contain" />
+                  <button type="button" onClick={clearImage} className="absolute top-2 right-2 icon-badge !w-7 !h-7 !bg-[var(--surface)]">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
+                  </button>
+                </div>
+              ) : (
+                <textarea required placeholder="e.g. User prefers dark mode, works in IST, building a Shelby marketplace demo." value={content} onChange={(e) => setContent(e.target.value)} className="field min-h-[120px] resize-y" />
+              )}
             </label>
             <label className="flex flex-col gap-2">
               <span className="field-label">Public summary</span>
@@ -396,6 +444,7 @@ export default function Home() {
                   <option value="conversation">conversation</option>
                   <option value="document">document</option>
                   <option value="embedding">embedding</option>
+                  <option value="image">image</option>
                 </select>
               </label>
             </div>
@@ -454,7 +503,12 @@ export default function Home() {
                     </div>
                   </div>
                   {recalled[m.id] && (
-                    <pre className="mt-4 ml-11 text-xs font-data bg-[var(--bg)] border border-[var(--border)] rounded-lg p-4 whitespace-pre-wrap">{recalled[m.id]}</pre>
+                    m.kind === "image" ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={recalled[m.id]} alt={m.summary} className="mt-4 ml-11 rounded-lg border border-[var(--border)] max-h-80 w-auto object-contain" />
+                    ) : (
+                      <pre className="mt-4 ml-11 text-xs font-data bg-[var(--bg)] border border-[var(--border)] rounded-lg p-4 whitespace-pre-wrap">{recalled[m.id]}</pre>
+                    )
                   )}
                 </li>
               ))}
