@@ -85,7 +85,7 @@ function ProfilePanel({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     loadStatus();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [account]);
+  }, [account?.address.toString()]);
 
   if (!account) return null;
   const address = account.address.toString();
