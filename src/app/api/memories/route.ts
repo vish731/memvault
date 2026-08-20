@@ -54,6 +54,9 @@ export async function POST(req: NextRequest) {
   if (!content || !summary) {
     return NextResponse.json({ error: "content and summary are required" }, { status: 400 });
   }
+  if (summary.length > 150) {
+    return NextResponse.json({ error: "Summary must be under 150 characters." }, { status: 400 });
+  }
   if (!walletAddress) {
     return NextResponse.json({ error: "Connect your wallet before storing a memory." }, { status: 400 });
   }
