@@ -3,7 +3,7 @@ create table if not exists memories (
   creator_visitor_id text not null,
   creator_wallet_address text,
   blob_name          text not null,
-  kind               text not null check (kind in ('conversation', 'fact', 'document', 'embedding')),
+  kind               text not null check (kind in ('conversation', 'fact', 'document', 'embedding', 'image')),
   tags               text[] not null default '{}',
   summary            text not null,
   enc_key            text not null,
@@ -66,3 +66,5 @@ alter table purchases add column if not exists tx_hash text;
 create unique index if not exists purchases_tx_hash_idx on purchases (tx_hash) where tx_hash is not null;
 alter table memories add column if not exists upload_account_address text;
 alter table memories add column if not exists listing_tx_hash text;
+alter table memories drop constraint if exists memories_kind_check;
+alter table memories add constraint memories_kind_check check (kind in ('conversation', 'fact', 'document', 'embedding', 'image'));
