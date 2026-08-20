@@ -2,6 +2,7 @@
 
 import { useWallet, WalletReadyState } from "@aptos-labs/wallet-adapter-react";
 import { useEffect, useState } from "react";
+import { SHELBY_USD_FA_ADDRESS } from "@/lib/constants";
 
 function truncate(address: string) {
   return `${address.slice(0, 6)}…${address.slice(-4)}`;
@@ -54,24 +55,67 @@ function CopyableAddress({ address, label }: { address: string; label: string })
 }
 
 function ProfilePanel({ onClose }: { onClose: () => void }) {
-  const { account, disconnect } = useWallet();
+  const { account, disconnect, signAndSubmitTransaction } = useWallet();
   const [status, setStatus] = useState<ShelbyAccountStatus | null>(null);
+  const [walletBalance, setWalletBalance] = useState<{ apt: number; balance: number } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [funding, setFunding] = useState(false);
+  const [fundError, setFundError] = useState<string | null>(null);
 
-  useEffect(() => {
+  async function loadStatus() {
     if (!account) return;
     setLoading(true);
-    fetch(`/api/user-shelby-account?wallet=${account.address.toString()}`, { cache: "no-store" })
-      .then((r) => r.json())
-      .then((data) => {
-        if (!data.error) setStatus(data);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    try {
+      const addr = account.address.toString();
+      const [personalRes, walletRes] = await Promise.all([
+        fetch(`/api/user-shelby-account?wallet=${addr}`, { cache: "no-store" }),
+        fetch(`/api/wallet-balance?address=${addr}`, { cache: "no-store" }),
+      ]);
+      const personalData = await personalRes.json();
+      const walletData = await walletRes.json();
+      if (!personalData.error) setStatus(personalData);
+      if (!walletData.error) setWalletBalance(walletData);
+    } catch {
+      // ignore
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [account]);
 
   if (!account) return null;
   const address = account.address.toString();
+
+  async function handleFundFromWallet() {
+    if (!status) return;
+    setFunding(true);
+    setFundError(null);
+    try {
+      // 0.02 APT for gas headroom, 5 shelbyUSD for a handful of uploads.
+      await signAndSubmitTransaction({
+        data: {
+          function: "0x1::aptos_account::transfer",
+          functionArguments: [status.address, 2_000_000],
+        },
+      });
+      await signAndSubmitTransaction({
+        data: {
+          function: "0x1::primary_fungible_store::transfer",
+          typeArguments: ["0x1::fungible_asset::Metadata"],
+          functionArguments: [SHELBY_USD_FA_ADDRESS, status.address, 5_000_000],
+        },
+      });
+      await loadStatus();
+    } catch (err) {
+      setFundError(err instanceof Error ? err.message : "Funding transfer was cancelled or failed.");
+    } finally {
+      setFunding(false);
+    }
+  }
 
   return (
     <div className="absolute right-0 top-full mt-2 card w-72 p-4 z-30">
@@ -83,6 +127,11 @@ function ProfilePanel({ onClose }: { onClose: () => void }) {
       </div>
 
       <CopyableAddress address={address} label="Wallet" />
+      {!loading && walletBalance && (
+        <p className="text-xs text-[var(--muted)] font-data mt-1">
+          {walletBalance.apt.toFixed(3)} APT &middot; {walletBalance.balance.toFixed(2)} shelbyUSD
+        </p>
+      )}
 
       <div className="border-t border-[var(--border)] my-3" />
 
@@ -94,24 +143,33 @@ function ProfilePanel({ onClose }: { onClose: () => void }) {
             {status.apt.toFixed(3)} APT &middot; {status.shelbyUsd.toFixed(2)} shelbyUSD
           </p>
           {!status.funded && (
-            <div className="flex gap-1.5">
-              <a
-                href={`https://docs.shelby.xyz/apis/faucet/aptos?address=${status.address}&network=shelbynet`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-ghost !text-[11px] !px-2.5 !py-1"
-              >
-                + APT
-              </a>
-              <a
-                href={`https://docs.shelby.xyz/apis/faucet/shelbyusd?address=${status.address}&network=shelbynet`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-ghost !text-[11px] !px-2.5 !py-1"
-              >
-                + shelbyUSD
-              </a>
-            </div>
+            <>
+              <button onClick={handleFundFromWallet} disabled={funding} className="btn-primary !text-xs !py-1.5 w-full mb-2">
+                {funding ? "Funding\u2026" : "Fund from my wallet"}
+              </button>
+              {fundError && <p className="text-[11px] text-[var(--danger)] mb-2">{fundError}</p>}
+              <details className="text-[11px] text-[var(--muted)]">
+                <summary className="cursor-pointer">Or fund it directly from a faucet</summary>
+                <div className="flex gap-1.5 mt-2">
+                  <a
+                    href={`https://docs.shelby.xyz/apis/faucet/aptos?address=${status.address}&network=shelbynet`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-ghost !text-[11px] !px-2.5 !py-1"
+                  >
+                    + APT
+                  </a>
+                  <a
+                    href={`https://docs.shelby.xyz/apis/faucet/shelbyusd?address=${status.address}&network=shelbynet`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-ghost !text-[11px] !px-2.5 !py-1"
+                  >
+                    + shelbyUSD
+                  </a>
+                </div>
+              </details>
+            </>
           )}
         </div>
       )}
