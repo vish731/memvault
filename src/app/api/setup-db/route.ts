@@ -64,6 +64,7 @@ export async function GET() {
     `alter table purchases add column if not exists tx_hash text`,
     `create unique index if not exists purchases_tx_hash_idx on purchases (tx_hash) where tx_hash is not null`,
     `alter table memories add column if not exists upload_account_address text`,
+    `alter table memories add column if not exists listing_tx_hash text`,
   ];
 
   const results: string[] = [];
