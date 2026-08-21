@@ -488,10 +488,10 @@ export default function Home() {
               {memories.map((m) => (
                 <li key={m.id} className="card card-hover p-5">
                   <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-3">
+                    <div className="flex items-start gap-3 min-w-0 flex-1">
                       <LockIcon open={!!recalled[m.id]} />
-                      <div>
-                        <p className="text-[0.9375rem] font-semibold">{m.summary}</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[0.9375rem] font-semibold break-all line-clamp-2">{m.summary}</p>
                         <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                           <span className="text-xs font-medium text-[var(--muted)] bg-[var(--bg)] border border-[var(--border)] rounded-full px-2.5 py-0.5">{m.kind}</span>
                           {m.tags.map((t) => (
