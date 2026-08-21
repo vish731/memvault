@@ -190,7 +190,10 @@ export default function Home() {
       setError("Please connect your wallet before storing a memory.");
       return;
     }
-    const actualContent = kind === "image" ? imageDataUrl : content;
+    const actualContent =
+      kind === "image" && imageDataUrl
+        ? JSON.stringify({ image: imageDataUrl, notes: content || null })
+        : content;
     if (!actualContent) {
       setError(kind === "image" ? "Choose an image first." : "Enter some content first.");
       return;
@@ -410,24 +413,29 @@ export default function Home() {
           <form onSubmit={handleCreate} className="card flex flex-col gap-5 p-7 sm:p-8">
             <label className="flex flex-col gap-2">
               <span className="field-label">Memory content</span>
-              {imageDataUrl ? (
-                <div className="relative">
+              {imageDataUrl && (
+                <div className="relative mb-1">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={imageDataUrl} alt={imageName ?? "Selected image"} className="rounded-lg border border-[var(--border)] max-h-64 w-auto object-contain" />
+                  <img src={imageDataUrl} alt={imageName ?? "Selected image"} className="rounded-lg border border-[var(--border)] max-h-56 w-auto object-contain" />
                   <button type="button" onClick={clearImage} className="absolute top-2 right-2 icon-badge !w-7 !h-7 !bg-[var(--surface)]">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
                   </button>
                 </div>
-              ) : (
-                <div className="relative">
-                  <textarea required placeholder="e.g. User prefers dark mode, works in IST, building a Shelby marketplace demo." value={content} onChange={(e) => setContent(e.target.value)} className="field min-h-[120px] resize-y w-full pb-9" />
-                  <label className="absolute bottom-2.5 right-3 text-sm font-medium text-[var(--primary)] hover:text-[var(--primary-dark)] transition-colors cursor-pointer flex items-center gap-1.5">
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
-                    Attach documents (up to 3MB)
-                    <input type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
-                  </label>
-                </div>
               )}
+              <div className="relative">
+                <textarea
+                  required={!imageDataUrl}
+                  placeholder={imageDataUrl ? "Optional notes about this image..." : "e.g. User prefers dark mode, works in IST, building a Shelby marketplace demo."}
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  className="field min-h-[100px] resize-y w-full pb-9"
+                />
+                <label className="absolute bottom-2.5 right-3 text-sm font-medium text-[var(--primary)] hover:text-[var(--primary-dark)] transition-colors cursor-pointer flex items-center gap-1.5">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
+                  {imageDataUrl ? "Change image" : "Attach documents (up to 3MB)"}
+                  <input type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
+                </label>
+              </div>
             </label>
             <label className="flex flex-col gap-2">
               <span className="field-label">Public summary</span>
@@ -505,8 +513,28 @@ export default function Home() {
                   </div>
                   {recalled[m.id] && (
                     m.kind === "image" ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={recalled[m.id]} alt={m.summary} className="mt-4 ml-11 rounded-lg border border-[var(--border)] max-h-80 w-auto object-contain" />
+                      (() => {
+                        let img = recalled[m.id];
+                        let notes: string | null = null;
+                        try {
+                          const parsed = JSON.parse(recalled[m.id]);
+                          if (parsed.image) {
+                            img = parsed.image;
+                            notes = parsed.notes;
+                          }
+                        } catch {
+                          // Older image memories stored the raw data URL directly.
+                        }
+                        return (
+                          <div className="mt-4 ml-11">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={img} alt={m.summary} className="rounded-lg border border-[var(--border)] max-h-80 w-auto object-contain" />
+                            {notes && (
+                              <p className="text-xs text-[var(--muted)] mt-2 leading-relaxed">{notes}</p>
+                            )}
+                          </div>
+                        );
+                      })()
                     ) : (
                       <pre className="mt-4 ml-11 text-xs font-data bg-[var(--bg)] border border-[var(--border)] rounded-lg p-4 whitespace-pre-wrap">{recalled[m.id]}</pre>
                     )
