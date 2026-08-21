@@ -16,20 +16,14 @@ export default function Contact() {
           <span className="icon-badge shrink-0">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
           </span>
-          <div>
-            <p className="font-semibold text-[0.9375rem]">X (Twitter)</p>
-            <p className="text-sm text-[var(--muted)]">@gojo0204hm</p>
-          </div>
+          <p className="font-semibold text-[0.9375rem]">X (Twitter)</p>
         </a>
 
         <a href="https://t.me/gojo0204hm" target="_blank" rel="noopener noreferrer" className="card card-hover p-6 flex items-center gap-4">
           <span className="icon-badge accent shrink-0">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M21.94 3.36L18.5 20.13c-.26 1.15-.94 1.43-1.9.89l-5.26-3.88-2.54 2.44c-.28.28-.52.52-1.06.52l.38-5.36 9.76-8.82c.42-.38-.1-.59-.66-.21L6.13 12.4l-5.28-1.65c-1.15-.36-1.17-1.15.24-1.7L20.5 2.14c.96-.36 1.8.22 1.44 1.22z" /></svg>
           </span>
-          <div>
-            <p className="font-semibold text-[0.9375rem]">Telegram</p>
-            <p className="text-sm text-[var(--muted)]">@gojo0204hm</p>
-          </div>
+          <p className="font-semibold text-[0.9375rem]">Telegram</p>
         </a>
       </div>
 
