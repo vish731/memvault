@@ -13,62 +13,81 @@ function Section({ n, title, children }: { n: string; title: string; children: R
 export default function Docs() {
   return (
     <div className="max-w-3xl mx-auto px-6 sm:px-10 py-14">
-      <span className="badge-pill mb-5 animate-in">
+      <span className="badge-pill mb-5">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" /></svg>
         Documentation
       </span>
-      <h1 className="text-4xl font-extrabold tracking-tight mb-4 animate-in delay-1">How Memvault works</h1>
-      <p className="text-[var(--muted)] text-[0.9375rem] leading-relaxed mb-12 max-w-lg animate-in delay-2">
-        Here&rsquo;s what actually happens under the hood when you store a memory or buy one from someone else.
+      <h1 className="text-4xl font-extrabold tracking-tight mb-4">How Memvault works</h1>
+      <p className="text-[var(--muted)] text-[0.9375rem] leading-relaxed mb-12 max-w-lg">
+        Here&rsquo;s what actually happens under the hood when you store a memory, list it, or buy one from someone else.
       </p>
 
       <Section n="01" title="Encryption">
         <p>
-          Your memory content never leaves your browser (or this server) in plain form. Each memory gets its own
-          random <strong className="text-[var(--ink)]">AES-256-GCM</strong> key the moment you write it, and only the
-          encrypted bytes get uploaded anywhere. The key and the content never travel together.
+          Every memory gets its own random <strong className="text-[var(--ink)]">AES-256-GCM</strong> key the moment
+          you write it. Only the encrypted bytes ever get uploaded anywhere, whether the memory is text or an image.
         </p>
         <p>
-          The <strong className="text-[var(--ink)]">summary</strong> field works differently on purpose: it stays
-          in plain text, because that&rsquo;s the part buyers actually see when they&rsquo;re browsing the marketplace.
+          The <strong className="text-[var(--ink)]">summary</strong> field stays in plain text on purpose, since
+          that&rsquo;s what buyers see when browsing the marketplace. Keep it under 150 characters and don&rsquo;t
+          put anything sensitive there.
         </p>
       </Section>
 
-      <Section n="02" title="Where it's actually stored">
+      <Section n="02" title="Where memories are stored">
         <p>
           Encrypted blobs go to <a href="https://docs.shelby.xyz/protocol" target="_blank" rel="noopener noreferrer" className="text-[var(--primary)] font-medium">Shelby Protocol</a>,
-          a decentralized storage network coordinated on Aptos where reads are metered and paid for. Shelby&rsquo;s job is keeping
-          the data around and serving it fast; Memvault&rsquo;s job is deciding who&rsquo;s allowed to decrypt it once they have it.
+          a decentralized storage network on Aptos where reads are metered and paid for. Shelby keeps the data around
+          and serves it fast; Memvault decides who&rsquo;s allowed to decrypt it once they have it.
         </p>
         <p>
-          Right now every upload goes through one shared account (set via <code className="font-data text-xs bg-[var(--bg)] border border-[var(--border)] rounded px-1.5 py-0.5">SHELBY_PRIVATE_KEY</code>).
-          That&rsquo;s a simplification: it means storing a memory doesn&rsquo;t require signing a wallet transaction for the
-          upload itself, only for buying and selling.
-        </p>
-      </Section>
-
-      <Section n="03" title="Buying and selling">
-        <p>
-          Listing something for sale doesn&rsquo;t move it or copy it anywhere; it just flips a flag and attaches a price.
-          Since Shelby blobs can be located by account and blob name alone, the thing actually protecting your content
-          is the decryption key, not the storage itself.
+          Each connected wallet gets its own dedicated Shelby account for uploads, generated automatically the first
+          time you connect. If that account isn&rsquo;t funded with APT and ShelbyUSD, storing a memory will fail
+          with a clear message telling you to fund it, rather than quietly falling back to a shared account. You can
+          fund it directly from a faucet, or with one click from your connected wallet, both from the account panel
+          in the header.
         </p>
         <p>
-          When you list a memory with a wallet connected, buyers pay you directly: their wallet signs a real ShelbyUSD
-          transfer to your address, and the app checks that transaction on-chain before handing over the key. Listings
-          created earlier, before that existed, still fall back to an internal test balance so they keep working.
+          This account holds the private key server-side, not in your wallet extension, because Shelby&rsquo;s
+          upload authentication expects a raw signature format that browser wallets don&rsquo;t produce today. We
+          have an open question with the Shelby team on whether there&rsquo;s a supported path around this.
         </p>
       </Section>
 
-      <Section n="04" title="Wallet connection">
+      <Section n="03" title="Listing and buying">
         <p>
-          Connecting a wallet (Petra or OKX) uses the standard Aptos wallet adapter, following the AIP-62 spec that
-          most Aptos wallets implement. Nothing about your private key ever touches this app; your wallet signs
-          transactions and only ever shares your public address.
+          Listing a memory for sale is a real, wallet-signed on-chain commitment, not just a database flag. When you
+          list something, your wallet signs a small transaction, and the app verifies it succeeded and came from your
+          address before saving the listing.
         </p>
         <p>
-          One thing still catching up: your identity for things like favorites and recall history is tracked by an
-          anonymous session, not your wallet address. Tying that fully to your wallet is the next piece of this.
+          Buying works the same way: your wallet signs a real ShelbyUSD transfer straight to the seller&rsquo;s
+          address. The app checks that transaction on-chain, matching the amount, sender, and recipient, before
+          decrypting and handing over the content.
+        </p>
+      </Section>
+
+      <Section n="04" title="Identity">
+        <p>
+          Once you connect a wallet, your memories, purchases, and favorites are tracked by your wallet&rsquo;s
+          address instead of a browser cookie. Connect the same wallet from a different device or browser and
+          everything you&rsquo;ve stored, bought, or saved shows up the same way.
+        </p>
+      </Section>
+
+      <Section n="05" title="Images">
+        <p>
+          You can attach an image instead of typing text, up to 3MB. It gets base64-encoded and encrypted the same
+          way text does, so the same key-based access control applies. You can also add a short note alongside the
+          image; both get stored together and shown together when you recall it.
+        </p>
+      </Section>
+
+      <Section n="06" title="Deleting a memory">
+        <p>
+          Deleting removes the metadata record from Memvault permanently, along with any purchases, favorites, or
+          reviews attached to it. Shelby doesn&rsquo;t support deleting an already-committed blob directly, only
+          letting it expire, but once the record (and its decryption key) is gone, the blob is unreadable anyway.
         </p>
       </Section>
 
@@ -77,8 +96,8 @@ export default function Docs() {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 9v4M12 17h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" /></svg>
         </span>
         <p className="text-sm text-[var(--muted)]">
-          This runs on Shelby&rsquo;s testnet. Transfers are real, verifiable transactions, but testnet ShelbyUSD and APT
-          don&rsquo;t carry real-world value.
+          This runs on Shelby&rsquo;s testnet. Transfers are real, verifiable transactions, but testnet ShelbyUSD and
+          APT don&rsquo;t carry real-world value.
         </p>
       </div>
     </div>
