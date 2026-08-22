@@ -1,4 +1,4 @@
-ex function Contact() {
+export default function Contact() {
   return (
     <div className="max-w-3xl mx-auto px-6 sm:px-10 py-14">
       <span className="badge-pill mb-5">
