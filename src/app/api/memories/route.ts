@@ -9,6 +9,7 @@ import {
   SHELBY_USD_FA_ADDRESS,
 } from "@/lib/shelby";
 import { getOrCreateVisitorId, VISITOR_COOKIE } from "@/lib/visitor";
+import { generateEmbedding } from "@/lib/embeddings";
 
 export const runtime = "nodejs";
 
@@ -99,16 +100,20 @@ export async function POST(req: NextRequest) {
       expirationMicros,
     });
 
+    // Generated from the public summary (never the encrypted content), so
+    // semantic search can work without ever touching plaintext memory data.
+    const embedding = await generateEmbedding(summary);
+
     const db = sql();
     const [record] = await db`
       insert into memories (
         creator_visitor_id, creator_wallet_address, upload_account_address,
-        blob_name, kind, tags, summary, enc_key, expires_at
+        blob_name, kind, tags, summary, enc_key, expires_at, summary_embedding
       )
       values (
         ${visitorId}, ${walletAddress}, ${uploadAccountAddress},
         ${blobName}, ${kind ?? "fact"}, ${tags ?? []}, ${summary}, ${key},
-        to_timestamp(${expirationMicros / 1_000_000})
+        to_timestamp(${expirationMicros / 1_000_000}), ${embedding ? JSON.stringify(embedding) : null}
       )
       returning id, kind, tags, summary, listed, price_usd, created_at, expires_at
     `;
