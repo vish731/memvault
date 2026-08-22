@@ -68,3 +68,4 @@ alter table memories add column if not exists upload_account_address text;
 alter table memories add column if not exists listing_tx_hash text;
 alter table memories drop constraint if exists memories_kind_check;
 alter table memories add constraint memories_kind_check check (kind in ('conversation', 'fact', 'document', 'embedding', 'image'));
+alter table memories add column if not exists summary_embedding jsonb;
