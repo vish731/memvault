@@ -5,12 +5,13 @@ import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { motion, AnimatePresence } from "motion/react";
 import type { MarketListing } from "@/lib/types";
 import { SHELBY_USD_FA_ADDRESS, SHELBY_USD_DECIMALS } from "@/lib/constants";
+import SemanticSearchBox from "@/components/SemanticSearchBox";
 
 type SortMode = "newest" | "price-low" | "price-high" | "top-rated";
 
 function StarIcon({ filled }: { filled: boolean }) {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"}>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"}>
       <path d="M12 3l2.9 6 6.6.9-4.8 4.6 1.1 6.5-5.8-3.1-5.8 3.1 1.1-6.5-4.8-4.6 6.6-.9L12 3z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
     </svg>
   );
@@ -18,10 +19,12 @@ function StarIcon({ filled }: { filled: boolean }) {
 
 function RatingBadge({ avg, count }: { avg: number | string | null; count: number | string }) {
   const n = Number(count);
-  if (!avg || n === 0) return null;
+  if (!avg || n === 0) {
+    return <span className="text-xs text-[var(--muted)]">No reviews yet</span>;
+  }
   return (
     <span className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--accent)]">
-      <StarIcon filled />
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l2.9 6 6.6.9-4.8 4.6 1.1 6.5-5.8-3.1-5.8 3.1 1.1-6.5-4.8-4.6 6.6-.9L12 3z" /></svg>
       {Number(avg).toFixed(1)} <span className="text-[var(--muted)] font-medium">({n})</span>
     </span>
   );
@@ -30,35 +33,44 @@ function RatingBadge({ avg, count }: { avg: number | string | null; count: numbe
 function WalletBalanceCard() {
   const { connected, account } = useWallet();
   const [balance, setBalance] = useState<number | null>(null);
+  const [apt, setApt] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!connected || !account) {
       setBalance(null);
+      setApt(null);
       return;
     }
     setLoading(true);
-    fetch(`/api/wallet-balance?address=${account.address.toString()}`)
+    fetch(`/api/wallet-balance?address=${account.address.toString()}`, { cache: "no-store" })
       .then((r) => r.json())
-      .then((data) => setBalance(data.balance ?? 0))
-      .catch(() => setBalance(null))
+      .then((data) => {
+        if (!data.error) {
+          setBalance(data.balance);
+          setApt(data.apt ?? null);
+        }
+      })
+      .catch(() => {})
       .finally(() => setLoading(false));
-  }, [connected, account]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [connected, account?.address.toString()]);
 
-  if (!connected) {
-    return (
-      <div className="card px-5 py-3.5 text-sm text-[var(--muted)] max-w-[220px]">
-        Connect your wallet to see your real shelbyUSD balance.
-      </div>
-    );
-  }
+  if (!connected) return null;
 
   return (
-    <div className="card px-5 py-3.5 text-right">
-      <p className="text-xs font-medium text-[var(--muted)]">Wallet balance (Shelbynet)</p>
-      <p className="font-data text-xl font-semibold text-[var(--primary-dark)] mt-0.5">
-        {loading ? "…" : (balance ?? 0).toFixed(2)} <span className="text-xs text-[var(--muted)] font-sans font-normal">shelbyUSD</span>
-      </p>
+    <div className="card p-5 mb-6 max-w-xs">
+      <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)] mb-2">Wallet balance (Shelbynet)</p>
+      {loading ? (
+        <p className="text-sm text-[var(--muted)]">Loading&hellip;</p>
+      ) : (
+        <p className="font-data text-2xl font-bold">
+          {(balance ?? 0).toFixed(2)} <span className="text-sm font-medium text-[var(--muted)]">shelbyUSD</span>
+        </p>
+      )}
+      {apt !== null && !loading && (
+        <p className="font-data text-xs text-[var(--muted)] mt-1">{apt.toFixed(3)} APT</p>
+      )}
     </div>
   );
 }
@@ -72,6 +84,7 @@ export default function Market() {
   const [buying, setBuying] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortMode>("newest");
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -148,126 +161,121 @@ export default function Market() {
   }
 
   const visible = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    let result = listings;
-    if (q) {
-      result = result.filter(
+    let items = [...listings];
+    if (favoritesOnly) items = items.filter((m) => m.isFavorite);
+    if (query.trim()) {
+      const q = query.toLowerCase();
+      items = items.filter(
         (m) =>
           m.summary.toLowerCase().includes(q) ||
           m.kind.toLowerCase().includes(q) ||
           m.tags.some((t) => t.toLowerCase().includes(q))
       );
     }
-    const sorted = [...result];
-    if (sort === "price-low") sorted.sort((a, b) => Number(a.price_usd) - Number(b.price_usd));
-    if (sort === "price-high") sorted.sort((a, b) => Number(b.price_usd) - Number(a.price_usd));
-    if (sort === "top-rated") sorted.sort((a, b) => Number(b.avg_rating ?? 0) - Number(a.avg_rating ?? 0));
-    return sorted;
-  }, [listings, query, sort]);
-
-  const allTags = useMemo(() => {
-    const set = new Set<string>();
-    listings.forEach((m) => m.tags.forEach((t) => set.add(t)));
-    return Array.from(set).slice(0, 8);
-  }, [listings]);
+    switch (sort) {
+      case "price-low":
+        items.sort((a, b) => Number(a.price_usd) - Number(b.price_usd));
+        break;
+      case "price-high":
+        items.sort((a, b) => Number(b.price_usd) - Number(a.price_usd));
+        break;
+      case "top-rated":
+        items.sort((a, b) => Number(b.avg_rating ?? 0) - Number(a.avg_rating ?? 0));
+        break;
+      default:
+        break;
+    }
+    return items;
+  }, [listings, query, sort, favoritesOnly]);
 
   return (
     <div className="max-w-3xl mx-auto px-6 sm:px-10 py-14">
-      <div className="flex items-start justify-between gap-6 flex-wrap mb-2">
-        <div>
-          <span className="badge-pill mb-5 animate-in">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 3h2l2.4 12.2a2 2 0 0 0 2 1.8h7.2a2 2 0 0 0 2-1.6L20 8H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><circle cx="9" cy="20" r="1" fill="currentColor" /><circle cx="17" cy="20" r="1" fill="currentColor" /></svg>
-            Pay-per-read, unlocked instantly
-          </span>
-          <h1 className="text-4xl font-extrabold tracking-tight mb-3 animate-in delay-1">Marketplace</h1>
-          <p className="text-[var(--muted)] text-[0.9375rem] leading-relaxed max-w-lg animate-in delay-2">
-            Entries listed for sale by other holders. Content stays encrypted until purchase releases the key.
-          </p>
-        </div>
-        <WalletBalanceCard />
+      <motion.span
+        className="badge-pill mb-5"
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 3h2l2.4 12.2a2 2 0 0 0 2 1.8h7.2a2 2 0 0 0 2-1.6L20 8H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        Pay-per-read, unlocked instantly
+      </motion.span>
+      <motion.h1
+        className="text-4xl font-extrabold tracking-tight mb-3"
+        initial={{ opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
+      >
+        Marketplace
+      </motion.h1>
+      <motion.p
+        className="text-[var(--muted)] text-[0.9375rem] leading-relaxed max-w-lg mb-8"
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}
+      >
+        Entries listed for sale by other holders. Content stays encrypted until purchase releases the key.
+      </motion.p>
+
+      <WalletBalanceCard />
+
+      <div className="text-xs text-[var(--muted)] border border-[var(--border)] rounded-xl p-4 mb-6">
+        New listings are paid for with a real on-chain transfer from your connected wallet. Older listings, created
+        before wallet payments existed, still use internal test credits. See <a href="/docs" className="text-[var(--primary)] font-medium">Docs</a> for details.
       </div>
 
-      <div className="text-xs text-[var(--muted)] border border-[var(--border)] bg-[var(--bg)] rounded-lg px-4 py-2.5 mb-2">
-        New listings are paid for with a real on-chain transfer from your connected wallet. Older listings, created before wallet payments existed, still use internal test credits. See <a href="/docs" className="text-[var(--primary)] font-medium">Docs</a> for details.
-      </div>
+      <SemanticSearchBox />
 
       {error && (
-        <div className="text-sm text-[var(--danger)] border border-[var(--danger)]/20 bg-[var(--danger-soft)] rounded-xl p-4 mt-8 mb-2 font-medium">
+        <div className="text-sm text-[var(--danger)] border border-[var(--danger)]/20 bg-[var(--danger-soft)] rounded-xl p-4 mb-6 font-medium">
           {error}
         </div>
       )}
 
-      <div className="flex items-center justify-between gap-3 mt-10 mb-4 flex-wrap">
-        <div className="flex gap-3 flex-wrap flex-1">
-          <div className="relative flex-1 min-w-[220px]">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted)]">
-              <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" /><path d="M21 21l-4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-            <input
-              placeholder="Search by summary, tag, or kind"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="field pl-9 w-full"
-            />
-          </div>
-          <select value={sort} onChange={(e) => setSort(e.target.value as SortMode)} className="field min-w-[160px]">
-            <option value="newest">Newest first</option>
-            <option value="price-low">Price: low to high</option>
-            <option value="price-high">Price: high to low</option>
-            <option value="top-rated">Top rated</option>
-          </select>
-        </div>
-        <a href="/favorites" className="btn-ghost flex items-center gap-1.5 shrink-0">
-          <StarIcon filled={false} /> Favorites
-        </a>
+      <div className="flex gap-3 flex-wrap mb-8">
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search by summary, tag, or kind"
+          className="field flex-1 min-w-[200px]"
+        />
+        <select value={sort} onChange={(e) => setSort(e.target.value as SortMode)} className="field min-w-[160px]">
+          <option value="newest">Newest first</option>
+          <option value="price-low">Price: low to high</option>
+          <option value="price-high">Price: high to low</option>
+          <option value="top-rated">Top rated</option>
+        </select>
+        <button
+          onClick={() => setFavoritesOnly((v) => !v)}
+          className={`btn-ghost flex items-center gap-2 ${favoritesOnly ? "!border-[var(--accent)] !text-[var(--accent)]" : ""}`}
+        >
+          <StarIcon filled={favoritesOnly} />
+          Favorites
+        </button>
       </div>
 
-      {allTags.length > 0 && (
-        <div className="flex gap-2 flex-wrap mb-8">
-          {allTags.map((t) => (
-            <button
-              key={t}
-              onClick={() => setQuery(query === t ? "" : t)}
-              className={`text-xs font-medium rounded-full px-2.5 py-1 border transition-colors ${
-                query === t
-                  ? "bg-[var(--primary)] text-white border-[var(--primary)]"
-                  : "bg-[var(--bg)] text-[var(--muted)] border-[var(--border)] hover:border-[var(--primary)]"
-              }`}
-            >
-              {t}
-            </button>
-          ))}
+      {loading ? (
+        <p className="text-[var(--muted)] text-sm">Loading&hellip;</p>
+      ) : visible.length === 0 ? (
+        <div className="card p-8 text-center">
+          <p className="text-[var(--muted)] text-sm">No listings match right now. Check back soon.</p>
         </div>
-      )}
-
-      <div>
-        {loading ? (
-          <p className="text-[var(--muted)] text-sm">Loading&hellip;</p>
-        ) : visible.length === 0 ? (
-          <div className="card p-8 text-center">
-            <p className="text-[var(--muted)] text-sm">
-              {listings.length === 0
-                ? "No listings yet. List one of your memories for sale from the My Memories page."
-                : "No listings match your search."}
-            </p>
-          </div>
-        ) : (
-          <ul className="flex flex-col gap-3">
-            <AnimatePresence>
-              {visible.map((m, i) => (
-                <motion.li
-                  key={m.id}
-                  className="card card-hover p-5"
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.96 }}
-                  transition={{ duration: 0.4, delay: i * 0.05, ease: [0.16, 1, 0.3, 1] }}
-                  layout
-                >
+      ) : (
+        <ul className="flex flex-col gap-3">
+          <AnimatePresence>
+            {visible.map((m, i) => (
+              <motion.li
+                key={m.id}
+                className="card card-hover p-5"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.96 }}
+                transition={{ duration: 0.4, delay: i * 0.05, ease: [0.16, 1, 0.3, 1] }}
+                layout
+              >
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-[0.9375rem] font-semibold">{m.summary}</p>
+                      <p className="text-[0.9375rem] font-semibold break-all line-clamp-2">{m.summary}</p>
                       <RatingBadge avg={m.avg_rating} count={m.review_count} />
                     </div>
                     <div className="flex items-center gap-2 mt-1.5 flex-wrap">
@@ -302,12 +310,11 @@ export default function Market() {
                 {unlocked[m.id] && (
                   <pre className="mt-4 text-xs font-data bg-[var(--bg)] border border-[var(--border)] rounded-lg p-4 whitespace-pre-wrap">{unlocked[m.id]}</pre>
                 )}
-                </motion.li>
-              ))}
-            </AnimatePresence>
-          </ul>
-        )}
-      </div>
+              </motion.li>
+            ))}
+          </AnimatePresence>
+        </ul>
+      )}
     </div>
   );
 }
