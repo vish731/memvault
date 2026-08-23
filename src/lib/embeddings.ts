@@ -1,30 +1,30 @@
-const EMBEDDING_MODEL = "text-embedding-3-small";
+const EMBEDDING_MODEL = "gemini-embedding-001";
 
 /**
- * Generates an embedding vector for the given text via OpenAI's API.
+ * Generates an embedding vector for the given text via Google's Gemini API.
  * Returns null (rather than throwing) if no API key is configured, so
  * semantic search degrades gracefully to plain text search instead of
  * breaking memory creation or the marketplace.
  */
 export async function generateEmbedding(text: string): Promise<number[] | null> {
-  const apiKey = process.env.OPENAI_API_KEY?.trim();
+  const apiKey = process.env.GEMINI_API_KEY?.trim();
   if (!apiKey) return null;
 
   try {
-    const res = await fetch("https://api.openai.com/v1/embeddings", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({ model: EMBEDDING_MODEL, input: text }),
-    });
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${EMBEDDING_MODEL}:embedContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: { parts: [{ text }] } }),
+      }
+    );
     if (!res.ok) {
       console.error("Embedding request failed:", await res.text());
       return null;
     }
     const data = await res.json();
-    return data.data?.[0]?.embedding ?? null;
+    return data.embedding?.values ?? null;
   } catch (err) {
     console.error("Embedding request error:", err);
     return null;
