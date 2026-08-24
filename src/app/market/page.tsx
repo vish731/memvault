@@ -30,6 +30,34 @@ function RatingBadge({ avg, count }: { avg: number | string | null; count: numbe
   );
 }
 
+function UnlockedContent({ kind, summary, raw }: { kind: string; summary: string; raw: string }) {
+  if (kind !== "image") {
+    return (
+      <pre className="mt-4 text-xs font-data bg-[var(--bg)] border border-[var(--border)] rounded-lg p-4 whitespace-pre-wrap">{raw}</pre>
+    );
+  }
+
+  let img = raw;
+  let notes: string | null = null;
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed.image) {
+      img = parsed.image;
+      notes = parsed.notes ?? null;
+    }
+  } catch {
+    // Legacy raw image string with no notes to parse out; use as-is.
+  }
+
+  return (
+    <div className="mt-4">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={img} alt={summary} className="rounded-lg border border-[var(--border)] max-h-80 w-auto object-contain" />
+      {notes && <p className="text-xs text-[var(--muted)] mt-2">{notes}</p>}
+    </div>
+  );
+}
+
 function WalletBalanceCard() {
   const { connected, account } = useWallet();
   const [balance, setBalance] = useState<number | null>(null);
@@ -307,9 +335,7 @@ export default function Market() {
                     </motion.button>
                   </div>
                 </div>
-                {unlocked[m.id] && (
-                  <pre className="mt-4 text-xs font-data bg-[var(--bg)] border border-[var(--border)] rounded-lg p-4 whitespace-pre-wrap">{unlocked[m.id]}</pre>
-                )}
+                {unlocked[m.id] && <UnlockedContent kind={m.kind} summary={m.summary} raw={unlocked[m.id]} />}
               </motion.li>
             ))}
           </AnimatePresence>
