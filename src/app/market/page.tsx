@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "motion/react";
 import type { MarketListing } from "@/lib/types";
 import { SHELBY_USD_FA_ADDRESS, SHELBY_USD_DECIMALS } from "@/lib/constants";
 import SemanticSearchBox from "@/components/SemanticSearchBox";
+import { ensureShelbynet } from "@/lib/network-helper";
 
 type SortMode = "newest" | "price-low" | "price-high" | "top-rated";
 
@@ -104,7 +105,7 @@ function WalletBalanceCard() {
 }
 
 export default function Market() {
-  const { connected, account, signAndSubmitTransaction } = useWallet();
+  const { connected, account, signAndSubmitTransaction, network, changeNetwork } = useWallet();
   const [listings, setListings] = useState<MarketListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -148,6 +149,7 @@ export default function Market() {
         if (!connected || !account) {
           throw new Error("Connect your wallet first, this listing is paid for on-chain.");
         }
+        await ensureShelbynet(network, changeNetwork);
         const amount = Math.round(Number(listing.price_usd) * SHELBY_USD_DECIMALS);
         const result = await signAndSubmitTransaction({
           data: {
