@@ -113,7 +113,15 @@ function ProfilePanel({ onClose }: { onClose: () => void }) {
       });
       await loadStatus();
     } catch (err) {
-      setFundError(err instanceof Error ? err.message : "Funding transfer was cancelled or failed.");
+      console.error("Fund from wallet failed:", err);
+      let message = "Funding transfer was cancelled or failed.";
+      if (err instanceof Error) {
+        message = err.message;
+      } else if (err && typeof err === "object") {
+        const anyErr = err as { message?: string; reason?: string; code?: string | number };
+        message = anyErr.message ?? anyErr.reason ?? (anyErr.code ? `Wallet error (code ${anyErr.code})` : message);
+      }
+      setFundError(message);
     } finally {
       setFunding(false);
     }
