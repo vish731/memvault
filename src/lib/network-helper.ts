@@ -2,9 +2,11 @@ import { Network } from "@aptos-labs/ts-sdk";
 import type { NetworkInfo } from "@aptos-labs/wallet-adapter-react";
 
 /**
- * Ensures the connected wallet is on Shelbynet before a transaction is sent,
- * prompting the wallet's own network-switch flow if it isn't. Throws with a
- * clear message if the switch is rejected or unsupported by the wallet.
+ * Best-effort attempt to switch the connected wallet to Shelbynet before a
+ * transaction. Never throws: if the wallet doesn't support switching, or the
+ * switch fails or is rejected, this silently gives up so the actual
+ * transaction attempt still proceeds (and can surface its own real error,
+ * e.g. insufficient balance) instead of the whole action getting stuck.
  */
 export async function ensureShelbynet(
   network: NetworkInfo | null,
@@ -12,11 +14,9 @@ export async function ensureShelbynet(
 ): Promise<void> {
   if (network && network.name.toLowerCase() === "shelbynet") return;
 
-  const result = await changeNetwork(Network.SHELBYNET);
-  if (!result.success) {
-    throw new Error(
-      result.reason ??
-        "Please switch your wallet to Shelbynet manually, this wallet doesn't support switching networks automatically."
-    );
+  try {
+    await changeNetwork(Network.SHELBYNET);
+  } catch (err) {
+    console.warn("Could not switch network automatically:", err);
   }
 }
