@@ -3,6 +3,7 @@
 import { useWallet, WalletReadyState } from "@aptos-labs/wallet-adapter-react";
 import { useEffect, useState } from "react";
 import { SHELBY_USD_FA_ADDRESS } from "@/lib/constants";
+import { ensureShelbynet } from "@/lib/network-helper";
 
 function truncate(address: string) {
   return `${address.slice(0, 6)}…${address.slice(-4)}`;
@@ -55,7 +56,7 @@ function CopyableAddress({ address, label }: { address: string; label: string })
 }
 
 function ProfilePanel({ onClose }: { onClose: () => void }) {
-  const { account, disconnect, signAndSubmitTransaction } = useWallet();
+  const { account, disconnect, signAndSubmitTransaction, network, changeNetwork } = useWallet();
   const [status, setStatus] = useState<ShelbyAccountStatus | null>(null);
   const [walletBalance, setWalletBalance] = useState<{ apt: number; balance: number } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -95,6 +96,7 @@ function ProfilePanel({ onClose }: { onClose: () => void }) {
     setFunding(true);
     setFundError(null);
     try {
+      await ensureShelbynet(network, changeNetwork);
       // 0.02 APT for gas headroom, 5 shelbyUSD for a handful of uploads.
       await signAndSubmitTransaction({
         data: {
@@ -128,29 +130,9 @@ function ProfilePanel({ onClose }: { onClose: () => void }) {
 
       <CopyableAddress address={address} label="Wallet" />
       {!loading && walletBalance && (
-        <>
-          <p className="text-xs text-[var(--muted)] font-data mt-1 mb-2">
-            {(walletBalance.apt ?? 0).toFixed(3)} APT &middot; {(walletBalance.balance ?? 0).toFixed(2)} shelbyUSD
-          </p>
-          <div className="flex gap-1.5">
-            <a
-              href={`https://docs.shelby.xyz/apis/faucet/aptos?address=${address}&network=shelbynet`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-ghost !text-[11px] !px-2.5 !py-1"
-            >
-              + APT
-            </a>
-            <a
-              href={`https://docs.shelby.xyz/apis/faucet/shelbyusd?address=${address}&network=shelbynet`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-ghost !text-[11px] !px-2.5 !py-1"
-            >
-              + shelbyUSD
-            </a>
-          </div>
-        </>
+        <p className="text-xs text-[var(--muted)] font-data mt-1 mb-2">
+          {(walletBalance.apt ?? 0).toFixed(3)} APT &middot; {(walletBalance.balance ?? 0).toFixed(2)} shelbyUSD
+        </p>
       )}
 
       <div className="border-t border-[var(--border)] my-3" />
