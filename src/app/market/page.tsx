@@ -150,7 +150,22 @@ export default function Market() {
           throw new Error("Connect your wallet first, this listing is paid for on-chain.");
         }
         await ensureShelbynet(network, changeNetwork);
-        const amount = Math.round(Number(listing.price_usd) * SHELBY_USD_DECIMALS);
+
+        const price = Number(listing.price_usd);
+        const amount = Math.round(price * SHELBY_USD_DECIMALS);
+
+        // Surface the exact computed amount so a mismatch (like a stale or
+        // miscalculated price) is caught here, not silently in Petra's
+        // compact confirmation panel.
+        console.log("Buy amount check:", { priceUsd: price, rawUnits: amount, sellerAddress: listing.creator_wallet_address });
+        const confirmed = window.confirm(
+          `You're about to pay ${price.toFixed(2)} shelbyUSD (${amount} raw units) to ${listing.creator_wallet_address.slice(0, 10)}...\n\nProceed?`
+        );
+        if (!confirmed) {
+          setBuying(null);
+          return;
+        }
+
         const result = await signAndSubmitTransaction({
           data: {
             function: "0x1::primary_fungible_store::transfer",
@@ -249,8 +264,7 @@ export default function Market() {
       <WalletBalanceCard />
 
       <div className="text-xs text-[var(--muted)] border border-[var(--border)] rounded-xl p-4 mb-6">
-        New listings are paid for with a real on-chain transfer from your connected wallet. Older listings, created
-        before wallet payments existed, still use internal test credits. See <a href="/docs" className="text-[var(--primary)] font-medium">Docs</a> for details.
+        Listings are priced and paid for in APT, a real on-chain transfer straight from your connected wallet to the seller. See <a href="/docs" className="text-[var(--primary)] font-medium">Docs</a> for details.
       </div>
 
       <SemanticSearchBox />
