@@ -174,7 +174,8 @@ export default function Market() {
         txHash = result.hash;
       }
 
-      const res = await fetch(`/api/market/${id}/buy`, {
+      const url = account ? `/api/market/${id}/buy?wallet=${account.address.toString()}` : `/api/market/${id}/buy`;
+      const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ txHash }),
