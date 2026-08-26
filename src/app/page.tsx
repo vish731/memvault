@@ -138,6 +138,16 @@ export default function Home() {
   const [summary, setSummary] = useState("");
   const [tags, setTags] = useState("");
   const [kind, setKind] = useState<MemoryRecord["kind"]>("fact");
+  const [globalStats, setGlobalStats] = useState({ totalMemories: 0, totalListed: 0 });
+
+  useEffect(() => {
+    fetch("/api/stats", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((data) => {
+        if (!data.error) setGlobalStats(data);
+      })
+      .catch(() => {});
+  }, [memories]);
 
   function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -299,7 +309,6 @@ export default function Home() {
     }
   }
 
-  const listedCount = memories.filter((m) => m.listed).length;
 
   return (
     <>
@@ -388,7 +397,7 @@ export default function Home() {
               transition={{ duration: 0.5, delay: 0.5 }}
             >
               <span className="icon-badge !w-7 !h-7 sm:!w-9 sm:!h-9"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="4" y="11" width="16" height="9" rx="2" stroke="currentColor" strokeWidth="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg></span>
-              <div><p className="font-bold text-xs sm:text-sm leading-none stat-number">{memories.length}</p><p className="text-[10px] sm:text-xs text-[var(--muted)] mt-1 whitespace-nowrap">Memories sealed</p></div>
+              <div><p className="font-bold text-xs sm:text-sm leading-none stat-number">{globalStats.totalMemories}</p><p className="text-[10px] sm:text-xs text-[var(--muted)] mt-1 whitespace-nowrap">Memories sealed</p></div>
             </motion.div>
             <motion.div
               className="floating-badge float-badge float-delay !px-2.5 !py-2 sm:!px-4 sm:!py-2.5 -bottom-3 -right-2 sm:-bottom-5 sm:-right-5"
@@ -397,7 +406,7 @@ export default function Home() {
               transition={{ duration: 0.5, delay: 0.6 }}
             >
               <span className="icon-badge accent !w-7 !h-7 sm:!w-9 sm:!h-9"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 3h2l2.4 12.2a2 2 0 0 0 2 1.8h7.2a2 2 0 0 0 2-1.6L20 8H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></span>
-              <div><p className="font-bold text-xs sm:text-sm leading-none stat-number">{listedCount}</p><p className="text-[10px] sm:text-xs text-[var(--muted)] mt-1 whitespace-nowrap">Listed for sale</p></div>
+              <div><p className="font-bold text-xs sm:text-sm leading-none stat-number">{globalStats.totalListed}</p><p className="text-[10px] sm:text-xs text-[var(--muted)] mt-1 whitespace-nowrap">Listed for sale</p></div>
             </motion.div>
           </motion.div>
         </div>
