@@ -139,6 +139,8 @@ export default function Home() {
   const [tags, setTags] = useState("");
   const [kind, setKind] = useState<MemoryRecord["kind"]>("fact");
   const [globalStats, setGlobalStats] = useState({ totalMemories: 0, totalListed: 0 });
+  const [listModal, setListModal] = useState<{ id: string; price: string } | null>(null);
+  const [deleteModalId, setDeleteModalId] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/stats", { cache: "no-store" })
@@ -252,38 +254,19 @@ export default function Home() {
 
   async function handlePublish(id: string, listed: boolean) {
     setError(null);
-    let priceUsd: number | undefined;
-    let txHash: string | undefined;
-
     if (listed) {
       if (!account) {
         setError("Connect your wallet before listing a memory for sale, so buyers can pay you directly.");
         return;
       }
-      const input = window.prompt("List price in shelbyUSD:", "2.5");
-      if (!input) return;
-      priceUsd = Number(input);
-
-      try {
-        await ensureShelbynet(network, changeNetwork);
-        const result = await signAndSubmitTransaction({
-          data: {
-            function: "0x1::aptos_account::transfer",
-            functionArguments: [account.address.toString(), 1],
-          },
-        });
-        txHash = result.hash;
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Listing was cancelled in your wallet.");
-        return;
-      }
+      setListModal({ id, price: "2.5" });
+      return;
     }
-
     try {
       const res = await fetch(`/api/memories/${id}/publish`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ listed, priceUsd, walletAddress: account?.address.toString(), txHash }),
+        body: JSON.stringify({ listed: false, walletAddress: account?.address.toString() }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -293,8 +276,55 @@ export default function Home() {
     }
   }
 
-  async function handleDelete(id: string) {
-    if (!window.confirm("Delete this memory? This removes it from Memvault permanently. This can't be undone.")) return;
+  async function confirmListing() {
+    if (!listModal || !account) return;
+    const { id } = listModal;
+    const priceUsd = Number(listModal.price);
+    setListModal(null);
+    setError(null);
+
+    if (!priceUsd || priceUsd <= 0) {
+      setError("Enter a valid price greater than 0.");
+      return;
+    }
+
+    let txHash: string;
+    try {
+      await ensureShelbynet(network, changeNetwork);
+      const result = await signAndSubmitTransaction({
+        data: {
+          function: "0x1::aptos_account::transfer",
+          functionArguments: [account.address.toString(), 1],
+        },
+      });
+      txHash = result.hash;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Listing was cancelled in your wallet.");
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/memories/${id}/publish`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ listed: true, priceUsd, walletAddress: account.address.toString(), txHash }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      await loadMemories();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update listing");
+    }
+  }
+
+  function handleDelete(id: string) {
+    setDeleteModalId(id);
+  }
+
+  async function confirmDelete() {
+    if (!deleteModalId) return;
+    const id = deleteModalId;
+    setDeleteModalId(null);
     setError(null);
     try {
       const url = account
@@ -547,6 +577,68 @@ export default function Home() {
           )}
         </section>
       </div>
+
+      {listModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setListModal(null)}>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="card w-full max-w-sm p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <span className="icon-badge accent">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 3h2l2.4 12.2a2 2 0 0 0 2 1.8h7.2a2 2 0 0 0 2-1.6L20 8H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              </span>
+              <h3 className="font-bold text-lg">List for sale</h3>
+            </div>
+            <label className="flex flex-col gap-2 mb-5">
+              <span className="field-label">Price in shelbyUSD</span>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                autoFocus
+                value={listModal.price}
+                onChange={(e) => setListModal({ ...listModal, price: e.target.value })}
+                onKeyDown={(e) => e.key === "Enter" && confirmListing()}
+                className="field"
+              />
+            </label>
+            <div className="flex gap-2">
+              <button onClick={() => setListModal(null)} className="btn-ghost flex-1">Cancel</button>
+              <button onClick={confirmListing} className="btn-accent flex-1">List it</button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {deleteModalId && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setDeleteModalId(null)}>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="card w-full max-w-sm p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <span className="icon-badge !bg-[var(--danger-soft)] !text-[var(--danger)]">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2m2 0v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V7h12z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              </span>
+              <h3 className="font-bold text-lg">Delete memory?</h3>
+            </div>
+            <p className="text-sm text-[var(--muted)] mb-5">
+              This removes it from Memvault permanently. This can&rsquo;t be undone.
+            </p>
+            <div className="flex gap-2">
+              <button onClick={() => setDeleteModalId(null)} className="btn-ghost flex-1">Cancel</button>
+              <button onClick={confirmDelete} className="btn-primary !bg-[var(--danger)] !border-[var(--danger)] flex-1">Delete</button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </>
   );
 }
