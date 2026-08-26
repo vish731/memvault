@@ -138,9 +138,29 @@ function ProfilePanel({ onClose }: { onClose: () => void }) {
 
       <CopyableAddress address={address} label="Wallet" />
       {!loading && walletBalance && (
-        <p className="text-xs text-[var(--muted)] font-data mt-1 mb-2">
-          {(walletBalance.apt ?? 0).toFixed(3)} APT &middot; {(walletBalance.balance ?? 0).toFixed(2)} shelbyUSD
-        </p>
+        <>
+          <p className="text-xs text-[var(--muted)] font-data mt-1 mb-2">
+            {(walletBalance.apt ?? 0).toFixed(3)} APT &middot; {(walletBalance.balance ?? 0).toFixed(2)} shelbyUSD
+          </p>
+          <div className="flex gap-1.5 mb-2">
+            <a
+              href={`https://docs.shelby.xyz/apis/faucet/aptos?address=${address}&network=shelbynet`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-ghost !text-[11px] !px-2.5 !py-1"
+            >
+              + APT
+            </a>
+            <a
+              href={`https://docs.shelby.xyz/apis/faucet/shelbyusd?address=${address}&network=shelbynet`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-ghost !text-[11px] !px-2.5 !py-1"
+            >
+              + shelbyUSD
+            </a>
+          </div>
+        </>
       )}
 
       <div className="border-t border-[var(--border)] my-3" />
@@ -152,31 +172,28 @@ function ProfilePanel({ onClose }: { onClose: () => void }) {
           <p className="text-xs text-[var(--muted)] font-data mb-2">
             {(status.apt ?? 0).toFixed(3)} APT &middot; {(status.shelbyUsd ?? 0).toFixed(2)} shelbyUSD
           </p>
+          <div className="flex gap-1.5 mb-2">
+            <a
+              href={`https://docs.shelby.xyz/apis/faucet/aptos?address=${status.address}&network=shelbynet`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-ghost !text-[11px] !px-2.5 !py-1"
+            >
+              + APT
+            </a>
+            <a
+              href={`https://docs.shelby.xyz/apis/faucet/shelbyusd?address=${status.address}&network=shelbynet`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-ghost !text-[11px] !px-2.5 !py-1"
+            >
+              + shelbyUSD
+            </a>
+          </div>
           <button onClick={handleFundFromWallet} disabled={funding} className="btn-primary !text-xs !py-1.5 w-full mb-2">
             {funding ? "Funding\u2026" : "Fund from my wallet"}
           </button>
           {fundError && <p className="text-[11px] text-[var(--danger)] mb-2">{fundError}</p>}
-          <details className="text-[11px] text-[var(--muted)]">
-            <summary className="cursor-pointer">Or fund it directly from a faucet</summary>
-            <div className="flex gap-1.5 mt-2">
-              <a
-                href={`https://docs.shelby.xyz/apis/faucet/aptos?address=${status.address}&network=shelbynet`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-ghost !text-[11px] !px-2.5 !py-1"
-              >
-                + APT
-              </a>
-              <a
-                href={`https://docs.shelby.xyz/apis/faucet/shelbyusd?address=${status.address}&network=shelbynet`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-ghost !text-[11px] !px-2.5 !py-1"
-              >
-                + shelbyUSD
-              </a>
-            </div>
-          </details>
         </div>
       )}
 
