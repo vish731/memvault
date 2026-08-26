@@ -114,6 +114,7 @@ export default function Market() {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortMode>("newest");
   const [favoritesOnly, setFavoritesOnly] = useState(false);
+  const [pendingBuy, setPendingBuy] = useState<MarketListing | null>(null);
 
   async function load() {
     setLoading(true);
@@ -138,8 +139,17 @@ export default function Market() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [account?.address]);
 
-  async function handleBuy(listing: MarketListing) {
+  function handleBuyClick(listing: MarketListing) {
+    if (listing.alreadyPurchased || !listing.creator_wallet_address) {
+      executeBuy(listing);
+    } else {
+      setPendingBuy(listing);
+    }
+  }
+
+  async function executeBuy(listing: MarketListing) {
     const id = listing.id;
+    setPendingBuy(null);
     setBuying(id);
     setError(null);
     try {
@@ -153,18 +163,6 @@ export default function Market() {
 
         const price = Number(listing.price_usd);
         const amount = Math.round(price * SHELBY_USD_DECIMALS);
-
-        // Surface the exact computed amount so a mismatch (like a stale or
-        // miscalculated price) is caught here, not silently in Petra's
-        // compact confirmation panel.
-        console.log("Buy amount check:", { priceUsd: price, rawUnits: amount, sellerAddress: listing.creator_wallet_address });
-        const confirmed = window.confirm(
-          `You're about to pay ${price.toFixed(2)} shelbyUSD (${amount} raw units) to ${listing.creator_wallet_address.slice(0, 10)}...\n\nProceed?`
-        );
-        if (!confirmed) {
-          setBuying(null);
-          return;
-        }
 
         const result = await signAndSubmitTransaction({
           data: {
@@ -340,7 +338,7 @@ export default function Market() {
                       <StarIcon filled={m.isFavorite} />
                     </motion.button>
                     <motion.button
-                      onClick={() => handleBuy(m)}
+                      onClick={() => handleBuyClick(m)}
                       disabled={buying === m.id}
                       className="btn-accent"
                       whileHover={{ scale: 1.05 }}
@@ -356,6 +354,49 @@ export default function Market() {
             ))}
           </AnimatePresence>
         </ul>
+      )}
+
+      {pendingBuy && (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => setPendingBuy(null)}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="card w-full max-w-sm p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <span className="icon-badge accent">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 3h2l2.4 12.2a2 2 0 0 0 2 1.8h7.2a2 2 0 0 0 2-1.6L20 8H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              </span>
+              <h3 className="font-bold text-lg">Confirm purchase</h3>
+            </div>
+
+            <p className="text-sm text-[var(--muted)] mb-1">{pendingBuy.summary}</p>
+
+            <div className="flex items-center justify-between py-3 border-t border-b border-[var(--border)] my-3">
+              <span className="text-sm text-[var(--muted)]">You pay</span>
+              <span className="font-data text-lg font-bold">{Number(pendingBuy.price_usd).toFixed(2)} shelbyUSD</span>
+            </div>
+
+            <div className="flex items-center justify-between mb-5">
+              <span className="text-sm text-[var(--muted)]">To</span>
+              <span className="font-data text-xs">{pendingBuy.creator_wallet_address?.slice(0, 10)}&hellip;{pendingBuy.creator_wallet_address?.slice(-4)}</span>
+            </div>
+
+            <div className="flex gap-2">
+              <button onClick={() => setPendingBuy(null)} className="btn-ghost flex-1">
+                Cancel
+              </button>
+              <button onClick={() => executeBuy(pendingBuy)} className="btn-accent flex-1">
+                Confirm & Pay
+              </button>
+            </div>
+          </motion.div>
+        </div>
       )}
     </div>
   );
