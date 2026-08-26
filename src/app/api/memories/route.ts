@@ -112,6 +112,7 @@ export async function POST(req: NextRequest) {
       signer,
       blobData: Buffer.from(JSON.stringify(payload)),
       blobName,
+      expirationMicros,
     });
 
     const embedding = await generateEmbedding(summary);
