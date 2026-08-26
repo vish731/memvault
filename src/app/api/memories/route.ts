@@ -13,7 +13,25 @@ import { generateEmbedding } from "@/lib/embeddings";
 
 export const runtime = "nodejs";
 
-type MemoryKind = "conversation" | "fact" | "document" | "embedding";
+type MemoryKind = "conversation" | "fact" | "document" | "embedding" | "image";
+
+/**
+ * Converts noisy on-chain / SDK error messages into something a user can
+ * actually act on, instead of raw VM error strings.
+ */
+function friendlyStoreError(err: unknown): string {
+  const raw = err instanceof Error ? err.message : String(err);
+  if (raw.includes("INSUFFICIENT_BALANCE_FOR_TRANSACTION_FEE")) {
+    return "Insufficient balance. Your personal Shelby account doesn't have enough APT for gas — fund it from your wallet profile panel and try again.";
+  }
+  if (raw.includes("E_INSUFFICIENT_FUNDS")) {
+    return "Insufficient balance. Your personal Shelby account doesn't have enough ShelbyUSD to pay for storage — fund it from your wallet profile panel and try again.";
+  }
+  if (raw.includes("E_LOCATION_NOT_FOUND")) {
+    return "Storage location isn't set up correctly. Please try again in a moment.";
+  }
+  return "Failed to store memory. Please try again.";
+}
 
 export async function GET(req: NextRequest) {
   const { id: visitorId, isNew } = getOrCreateVisitorId(req);
@@ -65,9 +83,6 @@ export async function POST(req: NextRequest) {
   try {
     const client = getShelbyClient();
 
-    // Require the user's own funded Shelby account. No silent fallback to the
-    // shared account, so a failed/underfunded personal account surfaces as a
-    // clear error instead of quietly using shared funds.
     const userAccount = await getOrCreateUserShelbyAccount(walletAddress);
     const aptos = getAptos();
     const uploadAccountAddress = userAccount.accountAddress.toString();
@@ -97,11 +112,8 @@ export async function POST(req: NextRequest) {
       signer,
       blobData: Buffer.from(JSON.stringify(payload)),
       blobName,
-      expirationMicros,
     });
 
-    // Generated from the public summary (never the encrypted content), so
-    // semantic search can work without ever touching plaintext memory data.
     const embedding = await generateEmbedding(summary);
 
     const db = sql();
@@ -118,12 +130,11 @@ export async function POST(req: NextRequest) {
       returning id, kind, tags, summary, listed, price_usd, created_at, expires_at
     `;
 
-    const res = NextResponse.json({ memory: record, uploadedVia: uploadAccountAddress ? "personal" : "shared" }, { status: 201 });
+    const res = NextResponse.json({ memory: record, uploadedVia: "personal" }, { status: 201 });
     if (isNew) res.cookies.set(VISITOR_COOKIE, visitorId, { httpOnly: true, sameSite: "lax" });
     return res;
   } catch (err) {
     console.error("Failed to store memory:", err);
-    const message = err instanceof Error ? err.message : "Failed to store memory. Please try again.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: friendlyStoreError(err) }, { status: 500 });
   }
 }
