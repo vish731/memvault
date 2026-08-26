@@ -347,7 +347,7 @@ export default function Market() {
                       whileTap={{ scale: 0.96 }}
                       transition={{ type: "spring", stiffness: 400, damping: 17 }}
                     >
-                      {m.alreadyPurchased ? "Unlock (owned)" : buying === m.id ? "Processing..." : `Buy · ${m.price_usd}`}
+                      {m.alreadyPurchased ? "Unlock (owned)" : buying === m.id ? "Processing..." : `Buy · ${m.price_usd} shelbyUSD`}
                     </motion.button>
                   </div>
                 </div>
