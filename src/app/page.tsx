@@ -5,6 +5,7 @@ import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { motion, useMotionValue, useSpring, useTransform } from "motion/react";
 import type { MemoryRecord } from "@/lib/types";
 import { ensureShelbynet } from "@/lib/network-helper";
+import EditMemoryModal from "@/components/EditMemoryModal";
 
 function VaultScene() {
   const x = useMotionValue(0);
@@ -141,6 +142,7 @@ export default function Home() {
   const [globalStats, setGlobalStats] = useState({ totalMemories: 0, totalListed: 0 });
   const [listModal, setListModal] = useState<{ id: string; price: string } | null>(null);
   const [deleteModalId, setDeleteModalId] = useState<string | null>(null);
+  const [editingMemory, setEditingMemory] = useState<MemoryRecord | null>(null);
 
   useEffect(() => {
     fetch("/api/stats", { cache: "no-store" })
@@ -338,7 +340,6 @@ export default function Home() {
       setError(err instanceof Error ? err.message : "Failed to delete memory");
     }
   }
-
 
   return (
     <>
@@ -541,8 +542,9 @@ export default function Home() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex gap-2 shrink-0">
+                    <div className="flex gap-2 shrink-0 flex-wrap justify-end">
                       <button onClick={() => handleRecall(m.id)} className="btn-ghost">Recall</button>
+                      <button onClick={() => setEditingMemory(m)} className="btn-ghost">Edit</button>
                       <button onClick={() => handlePublish(m.id, !m.listed)} className="btn-ghost">{m.listed ? "Unlist" : "List for sale"}</button>
                       <button onClick={() => handleDelete(m.id)} className="btn-ghost !text-[var(--danger)] !border-[var(--danger)]/30">Delete</button>
                     </div>
@@ -638,6 +640,15 @@ export default function Home() {
             </div>
           </motion.div>
         </div>
+      )}
+
+      {editingMemory && (
+        <EditMemoryModal
+          memory={editingMemory}
+          walletAddress={account?.address.toString()}
+          onClose={() => setEditingMemory(null)}
+          onSaved={loadMemories}
+        />
       )}
     </>
   );
