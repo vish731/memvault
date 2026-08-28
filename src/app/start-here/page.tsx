@@ -31,18 +31,18 @@ export default function StartHere() {
         </p>
       </Step>
 
-      <Step n={2} title="Connect it">
+      <Step n={2} title="Connect it, then switch to Testnet">
         <p>
-          Hit Connect Wallet up top and approve it. Once you're in, click your address any time to see your balances, and to peek at the personal Shelby account we set up for you behind the scenes.
+          Hit Connect Wallet up top and approve it. If your wallet defaults to Mainnet, open the extension itself and switch the network to Testnet, most wallets don't let a website switch this for you automatically, so it's usually a one-time manual step.
         </p>
       </Step>
 
       <Step n={3} title="Get some testnet funds in place">
         <p>
-          There are two places money needs to sit, and it trips people up the first time. Your actual wallet needs APT and ShelbyUSD for listing and buying stuff. Your personal Shelby account needs its own APT and ShelbyUSD, separately, for uploading memories in the first place.
+          Two places need funds. Your actual wallet needs APT and ShelbyUSD for listing and buying. Your personal Shelby account, shown when you click your address, needs its own APT and ShelbyUSD separately, for uploading memories.
         </p>
         <p>
-          Don't want to hunt down two faucets? Open the account panel and hit "Fund from my wallet" once your main wallet has something in it, it moves funds over for you.
+          Don't want to hunt down two faucets? Once your main wallet has something in it, hit "Fund from my wallet" in the account panel to move funds over in one click.
         </p>
       </Step>
 
@@ -54,7 +54,7 @@ export default function StartHere() {
 
       <Step n={5} title="Put a price on it">
         <p>
-          Hit "List for sale," name your price in shelbyUSD. Your wallet will pop up asking you to sign, that's a real transaction confirming the listing is actually yours.
+          Hit "List for sale," name your price in shelbyUSD. Your wallet will pop up asking you to sign, a real transaction confirming the listing is actually yours. Made a typo in the summary? Hit Edit any time, no need to redo the whole thing.
         </p>
       </Step>
 
