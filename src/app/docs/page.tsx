@@ -30,15 +30,11 @@ export default function Docs() {
           plaintext, and neither does any intermediate service.
         </p>
         <p>
-          Each encrypted payload carries its own initialization vector and authentication tag, generated fresh per
-          memory rather than reused across a session. This means a compromise of one memory's key reveals nothing
-          about any other memory, even ones created moments apart by the same user.
-        </p>
-        <p>
           The one field that stays in plain text by design is the <strong className="text-[var(--ink)]">summary</strong>,
-          since a buyer needs something to evaluate before paying to unlock a memory. Keep it under 150 characters
-          and free of anything you wouldn't want publicly readable, since that's the only part of a listed memory
-          visible before purchase.
+          capped at 150 characters, since a buyer needs something to evaluate before paying to unlock a memory.
+          Summaries and tags can be edited after the fact without touching the encrypted content underneath, useful
+          if you typo something or want to reword how a listing reads. The actual content itself is fixed once
+          written; to change it, delete the memory and store a new one.
         </p>
       </Section>
 
@@ -46,76 +42,79 @@ export default function Docs() {
         <p>
           Encrypted blobs are written to <a href="https://docs.shelby.xyz/protocol" target="_blank" rel="noopener noreferrer" className="text-[var(--primary)] font-medium">Shelby Protocol</a>,
           a decentralized storage network coordinated on Aptos where both writes and reads are metered and paid
-          for on-chain. A blob is addressed by an account and a blob name; downloading it requires knowing both,
-          but downloading only ever returns ciphertext. The actual access control that matters is the decryption
-          key, which Memvault holds server-side and releases only after ownership or payment is verified.
+          for on-chain. A blob is addressed by an account and a blob name; downloading it only ever returns
+          ciphertext. Access control that actually matters is the decryption key, held server-side and released
+          only after ownership or payment is verified.
         </p>
         <p>
-          Each wallet that connects gets a dedicated Shelby account generated automatically for uploads, rather than
-          every user sharing a single account. This account is custodial: its private key is held server-side, not
-          inside your wallet extension, because Shelby's upload authentication (a challenge-response scheme called
-          BlobOwnerAuth) expects a raw signature over the challenge bytes. Browser wallets like Petra sign messages
-          in a wrapped format instead, prefixed and structured for replay protection, which doesn't match what
-          Shelby's default verification expects. We've opened an issue with the Shelby team asking whether the
-          protocol's alternate "derivable" auth scheme is meant to cover this case for Aptos wallets specifically,
-          and we'll move to wallet-signed uploads directly once that's resolved.
+          Each wallet that connects gets a dedicated Shelby account generated automatically for uploads, rather
+          than sharing a single account across every user. This account is custodial: its private key lives
+          server-side, not inside your wallet extension, because Shelby's upload authentication (BlobOwnerAuth)
+          expects a raw signature over the challenge bytes, while browser wallets like Petra sign a wrapped
+          message format instead for replay protection. We've asked the Shelby team whether the protocol's
+          "derivable" auth scheme is meant to cover this for Aptos wallets, and we'll move to direct wallet-signed
+          uploads once that's resolved.
         </p>
         <p>
-          Because this account is separate from your connected wallet, it needs its own funding: both APT for gas
-          and ShelbyUSD for the storage payment itself. Attempting to store a memory without either fails with an
-          explicit error rather than silently falling back to a shared account, and you can fund it directly from
-          a faucet or in a single click by transferring from your connected wallet.
+          Because this account is separate from your connected wallet, it needs its own funding: APT for gas and
+          ShelbyUSD for the storage payment itself. Storing a memory fails with an explicit error if either is
+          missing, rather than silently falling back to a shared account, and you can fund it directly from a
+          faucet or in one click from your connected wallet.
         </p>
       </Section>
 
       <Section n="03" title="Listing and buying">
         <p>
-          Listing a memory for sale is a real, wallet-signed transaction rather than a bare database update. When
-          you list something, your wallet is asked to sign a small on-chain transaction, and the server verifies
-          that transaction succeeded and was signed by your address before the listing is saved, along with the
-          transaction hash itself for later reference.
+          Listing a memory for sale is a real, wallet-signed on-chain commitment, not a bare database flag. Your
+          wallet signs a small transaction, and the server verifies it succeeded and came from your address before
+          the listing goes live, storing the transaction hash for reference.
         </p>
         <p>
-          Buying follows the same pattern at a larger scale: your wallet signs a genuine ShelbyUSD transfer,
-          addressed directly to the seller, for the exact listed price. The server independently verifies that
-          transaction on-chain, checking the sender, the recipient, the asset, and the amount, before decrypting
-          the memory's content and returning it. No payment is ever trusted purely because the client claims it
-          happened; every purchase is checked against the transaction itself.
+          Buying works the same way at a larger scale: your wallet signs a genuine ShelbyUSD transfer directly to
+          the seller. The server independently verifies that transaction, checking the sender, recipient, asset,
+          and amount, before decrypting and returning the content. Already own it? Unlocking it again is free and
+          skips payment entirely, it's checked against your purchase history first.
         </p>
         <p>
-          Listings created before this on-chain flow existed still work through an internal test-credit ledger,
-          so nothing that was listed earlier stops functioning. New listings go through the wallet-signed path by
-          default.
+          One thing worth knowing: wallets default to whatever network they were last on, often Mainnet. Shelbynet
+          transactions need your wallet on Testnet specifically, and most wallets don't support switching networks
+          programmatically from a website, so you may need to switch manually inside your wallet extension the
+          first time.
         </p>
       </Section>
 
       <Section n="04" title="Identity across devices">
         <p>
-          Before a wallet is connected, Memvault tracks activity through an anonymous session cookie, which is
-          enough to use the app but doesn't follow you anywhere. Once you connect a wallet, memories, purchases,
-          and favorites are recorded against your wallet's address instead. Connect the same wallet from a
-          different browser or device, and everything you've stored, bought, or saved reappears, since it was
-          never tied to that original session in the first place.
+          Before a wallet is connected, Memvault tracks activity through an anonymous session cookie. Once
+          connected, memories, purchases, and favorites are recorded against your wallet's address instead.
+          Connect the same wallet from a different browser or device, and everything you've stored, bought, or
+          saved reappears there too.
         </p>
       </Section>
 
       <Section n="05" title="Images">
         <p>
-          Memories aren't limited to text. You can attach an image up to 3MB, which is base64-encoded and put
-          through the exact same AES-256-GCM encryption path as text content, alongside an optional note. Both
-          are stored together as a single encrypted payload and reconstructed together when the memory is
-          recalled or purchased, so an image and its caption never separate.
+          Memories aren't limited to text. Attach an image up to 3MB, optionally with a short note, and both are
+          encrypted together through the same AES-256-GCM path as text content, stored as one payload, and
+          reconstructed together on recall.
         </p>
       </Section>
 
-      <Section n="06" title="Deleting a memory">
+      <Section n="06" title="Semantic search">
         <p>
-          Deleting a memory removes its metadata record from Memvault's database, along with any purchases,
-          favorites, or reviews that reference it, and is restricted to the wallet or session that created it.
-          Shelby itself doesn't expose a way to delete an already-committed blob on demand, only to let it expire
-          at the time originally set during upload. In practice this doesn't leave anything meaningfully
-          recoverable: once the metadata record and its decryption key are gone, the remaining ciphertext on
-          Shelby is just unreadable bytes until it naturally expires.
+          Listings can be found by meaning, not just keyword matching. Each memory's summary gets converted to an
+          embedding vector when it's stored, and searching the marketplace embeds your query the same way, ranking
+          listings by similarity. A search for "anything about pets" can surface a memory about a dog even if the
+          word "pets" never appears in it.
+        </p>
+      </Section>
+
+      <Section n="07" title="Deleting a memory">
+        <p>
+          Deleting removes the metadata record permanently, along with any purchases, favorites, or reviews
+          attached to it, and is restricted to the wallet or session that created it. Shelby doesn't expose a way
+          to delete an already-committed blob on demand, only to let it expire at the time set during upload, but
+          without the metadata record and its key, the remaining ciphertext is just unreadable bytes regardless.
         </p>
       </Section>
 
@@ -124,8 +123,8 @@ export default function Docs() {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 9v4M12 17h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" /></svg>
         </span>
         <p className="text-sm text-[var(--muted)]">
-          This runs on Shelby's testnet. Transfers are real, verifiable transactions, but testnet ShelbyUSD and APT
-          don't carry real-world value.
+          This runs on Shelby's testnet. Transfers are real, verifiable transactions, but testnet ShelbyUSD and
+          APT don't carry real-world value.
         </p>
       </div>
     </div>
