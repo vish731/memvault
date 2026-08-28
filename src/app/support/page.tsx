@@ -4,8 +4,12 @@ import { useState } from "react";
 
 const FAQS = [
   {
+    q: "My wallet's transaction keeps failing with an insufficient balance error.",
+    a: "Check which network your wallet is on. Shelbynet transactions need your wallet set to Testnet specifically. If it's on Mainnet, open your wallet extension directly and switch the network there, most wallets don't support switching networks from a website automatically, so this is usually a one-time manual step.",
+  },
+  {
     q: "Why do I need to fund two different accounts?",
-    a: "Your wallet pays for listing and buying, both real on-chain transactions your wallet signs directly. Your personal Shelby account pays for storing memories, since Shelby's upload authentication doesn't work with a browser wallet's signature format yet. You can move funds from your wallet into your personal Shelby account with one click from the account panel, so you only ever need to visit a faucet for your main wallet.",
+    a: "Your wallet pays for listing and buying, both real on-chain transactions your wallet signs directly. Your personal Shelby account pays for storing memories, since Shelby's upload authentication doesn't work with a browser wallet's signature format yet. You can move funds from your wallet into your personal Shelby account with one click from the account panel.",
   },
   {
     q: "Storing a memory failed with a funding error. What do I do?",
@@ -13,15 +17,15 @@ const FAQS = [
   },
   {
     q: "Does connecting a wallet give Memvault access to my funds?",
-    a: "No. Connecting only shares your public address. Every payment (listing, buying) requires you to approve a specific transaction in your wallet extension; nothing moves without your explicit signature.",
+    a: "No. Connecting only shares your public address. Every payment requires you to approve a specific transaction in your wallet extension; nothing moves without your explicit signature.",
+  },
+  {
+    q: "Can I edit a memory after storing it?",
+    a: "Yes, the public summary and tags can be edited any time from the Edit button. The underlying content is fixed once written; to change that, delete the memory and store a new one.",
   },
   {
     q: "What happens to a memory's encrypted data if I delete it?",
     a: "Deleting removes the memory's record and its decryption key from Memvault. Shelby doesn't support deleting an already-uploaded blob directly, only letting it expire naturally, but without the key it stays unreadable regardless.",
-  },
-  {
-    q: "Can I edit a memory after storing it?",
-    a: "Not yet. If something's wrong with a memory (a bad summary, wrong tags), delete it and store it again.",
   },
   {
     q: "What's the size limit for images?",
