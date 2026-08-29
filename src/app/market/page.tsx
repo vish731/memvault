@@ -324,7 +324,13 @@ export default function Market() {
                     <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                       <span className="text-xs font-medium text-[var(--muted)] bg-[var(--bg)] border border-[var(--border)] rounded-full px-2.5 py-0.5">{m.kind}</span>
                       {m.tags.map((t) => (
-                        <span key={t} className="text-xs font-medium text-[var(--muted)] bg-[var(--bg)] border border-[var(--border)] rounded-full px-2.5 py-0.5">{t}</span>
+                        <button
+                          key={t}
+                          onClick={() => setQuery(t)}
+                          className="text-xs font-medium text-[var(--muted)] bg-[var(--bg)] border border-[var(--border)] rounded-full px-2.5 py-0.5 hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors"
+                        >
+                          {t}
+                        </button>
                       ))}
                     </div>
                   </div>
