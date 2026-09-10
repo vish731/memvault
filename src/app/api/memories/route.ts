@@ -15,10 +15,6 @@ export const runtime = "nodejs";
 
 type MemoryKind = "conversation" | "fact" | "document" | "embedding" | "image";
 
-/**
- * Converts noisy on-chain / SDK error messages into something a user can
- * actually act on, instead of raw VM error strings.
- */
 function friendlyStoreError(err: unknown): string {
   const raw = err instanceof Error ? err.message : String(err);
   if (raw.includes("INSUFFICIENT_BALANCE_FOR_TRANSACTION_FEE")) {
@@ -40,13 +36,13 @@ export async function GET(req: NextRequest) {
 
   const rows = wallet
     ? await db`
-        select id, kind, tags, summary, listed, price_usd, created_at, expires_at
+        select id, kind, tags, summary, listed, price_usd, created_at, expires_at, source
         from memories
         where creator_wallet_address = ${wallet} or creator_visitor_id = ${visitorId}
         order by created_at desc
       `
     : await db`
-        select id, kind, tags, summary, listed, price_usd, created_at, expires_at
+        select id, kind, tags, summary, listed, price_usd, created_at, expires_at, source
         from memories
         where creator_visitor_id = ${visitorId}
         order by created_at desc
@@ -61,13 +57,14 @@ export async function POST(req: NextRequest) {
   const { id: visitorId, isNew } = getOrCreateVisitorId(req);
 
   const body = await req.json();
-  const { content, summary, tags, kind, ttlDays, walletAddress } = body as {
+  const { content, summary, tags, kind, ttlDays, walletAddress, source } = body as {
     content?: string;
     summary?: string;
     tags?: string[];
     kind?: MemoryKind;
     ttlDays?: number;
     walletAddress?: string;
+    source?: string;
   };
 
   if (!content || !summary) {
@@ -121,14 +118,15 @@ export async function POST(req: NextRequest) {
     const [record] = await db`
       insert into memories (
         creator_visitor_id, creator_wallet_address, upload_account_address,
-        blob_name, kind, tags, summary, enc_key, expires_at, summary_embedding
+        blob_name, kind, tags, summary, enc_key, expires_at, summary_embedding, source
       )
       values (
         ${visitorId}, ${walletAddress}, ${uploadAccountAddress},
         ${blobName}, ${kind ?? "fact"}, ${tags ?? []}, ${summary}, ${key},
-        to_timestamp(${expirationMicros / 1_000_000}), ${embedding ? JSON.stringify(embedding) : null}
+        to_timestamp(${expirationMicros / 1_000_000}), ${embedding ? JSON.stringify(embedding) : null},
+        ${source || null}
       )
-      returning id, kind, tags, summary, listed, price_usd, created_at, expires_at
+      returning id, kind, tags, summary, listed, price_usd, created_at, expires_at, source
     `;
 
     const res = NextResponse.json({ memory: record, uploadedVia: "personal" }, { status: 201 });
