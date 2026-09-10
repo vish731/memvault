@@ -7,6 +7,7 @@ export interface MemoryRecord {
   price_usd: number | string;
   created_at: string;
   expires_at: string;
+  source?: string | null;
 }
 
 export interface MarketListing extends MemoryRecord {
